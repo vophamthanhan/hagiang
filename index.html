@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch trình Hà Giang 2025</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="title">Lịch trình Hà Giang 2025</h1>
+            <p class="subtitle">13-16/11/2025 • Hành trình khám phá vùng đất địa đầu Tổ quốc</p>
+            <button class="btn-reset" id="resetBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                    <path d="M21 3v5h-5"/>
+                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                    <path d="M3 21v-5h5"/>
+                </svg>
+                Khôi phục dữ liệu ban đầu
+            </button>
+        </header>
+
+        <!-- Day Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-day="1">Ngày 1 (13/11/2025)</button>
+            <button class="tab" data-day="2">Ngày 2 (14/11/2025)</button>
+            <button class="tab" data-day="3">Ngày 3 (15/11/2025)</button>
+            <button class="tab" data-day="4">Ngày 4 (16/11/2025)</button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Map Section -->
+            <div class="map-section">
+                <div class="map-header">
+                    <div>
+                        <h2 class="map-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                <circle cx="12" cy="10" r="3"/>
+                            </svg>
+                            Bản đồ hành trình
+                        </h2>
+                        <p class="map-subtitle">Xem vị trí các điểm đến trong chuyến đi</p>
+                    </div>
+                    <button class="btn-route" id="showRouteBtn">Hiện tuyến đường</button>
+                </div>
+                <div class="map-container" id="map">
+                    <div class="map-placeholder">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        <p>Bản đồ sẽ hiển thị các điểm đến trong hành trình</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Itinerary Section -->
+            <div class="itinerary-section">
+                <div class="itinerary-header">
+                    <h2 class="itinerary-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20M2 12h20"/>
+                        </svg>
+                        <span id="dayTitle">Ngày 1 - 13/11/2025</span>
+                    </h2>
+                    <p class="itinerary-subtitle">Chi tiết lịch trình trong ngày</p>
+                </div>
+
+                <!-- Location List -->
+                <div class="location-list" id="locationList">
+                    <!-- Locations will be dynamically inserted here -->
+                </div>
+
+                <!-- Add Location Button -->
+                <button class="btn-add-location" id="addLocationBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Thêm địa điểm
+                </button>
+
+                <!-- Summary -->
+                <div class="summary">
+                    <h3 class="summary-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        </svg>
+                        Tổng quan hành trình
+                    </h3>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <span class="summary-label">Tổng quãng đường:</span>
+                            <span class="summary-value" id="totalDistance">0 km</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Thời gian di chuyển ước tính:</span>
+                            <span class="summary-value" id="totalTime">~0 phút</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Số điểm dừng:</span>
+                            <span class="summary-value" id="totalStops">0 điểm</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            <h3 class="instructions-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 20h9"/>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                </svg>
+                Hướng dẫn sử dụng
+            </h3>
+            <div class="instructions-content">
+                <p><strong>Chỉnh sửa thông tin:</strong></p>
+                <p>Nhấp vào biểu tượng bút chì 📝 bên cạnh mỗi địa điểm để chỉnh sửa thông tin. Dữ liệu sẽ được lưu tự động trong trình duyệt của bạn.</p>
+                <p><strong>Thêm địa điểm:</strong></p>
+                <p>Nhấp vào nút <strong>+ Thêm địa điểm</strong> ở cuối mỗi ngày để thêm một địa điểm mới vào lịch trình.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Chỉnh sửa thông tin địa điểm</h3>
+                <button class="modal-close" id="closeModal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <div class="form-group">
+                        <label>Tên địa điểm</label>
+                        <input type="text" id="editName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Thời gian</label>
+                        <input type="text" id="editTime" placeholder="VD: 05:00 hoặc 13:30-18:30">
+                    </div>
+                    <div class="form-group">
+                        <label>Hoạt động</label>
+                        <textarea id="editActivities" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Bữa ăn</label>
+                        <textarea id="editMeals" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Chỗ nghỉ</label>
+                        <input type="text" id="editAccommodation">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Vĩ độ (Latitude)</label>
+                            <input type="number" step="any" id="editLat">
+                        </div>
+                        <div class="form-group">
+                            <label>Kinh độ (Longitude)</label>
+                            <input type="number" step="any" id="editLng">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" id="cancelBtn">Hủy</button>
+                        <button type="submit" class="btn-save">Lưu thay đổi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
