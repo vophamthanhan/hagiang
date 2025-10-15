@@ -2,6 +2,10 @@
 let currentData = initializeData();
 let currentDay = 1;
 let editingLocation = null;
+let map = null;
+let markers = [];
+let routePolyline = null;
+let showingRoute = false;
 
 // DOM elements
 const tabs = document.querySelectorAll('.tab');
@@ -19,6 +23,7 @@ const editForm = document.getElementById('editForm');
 
 // Initialize app
 function init() {
+    initMap();
     renderDay(currentDay);
     attachEventListeners();
 }
@@ -41,6 +46,10 @@ function attachEventListeners() {
 
     addLocationBtn.addEventListener('click', () => {
         addNewLocation();
+    });
+
+    document.getElementById('showRouteBtn').addEventListener('click', () => {
+        toggleRoute();
     });
 
     closeModal.addEventListener('click', closeEditModal);
@@ -87,6 +96,9 @@ function renderDay(day) {
     
     // Update summary
     updateSummary(dayData.locations);
+    
+    // Update map
+    updateMap();
 }
 
 // Render locations list
@@ -277,6 +289,120 @@ function addNewLocation() {
     
     // Open edit modal for the new location
     openEditModal(newLocation, dayData.locations.length - 1);
+}
+
+// Initialize map
+function initMap() {
+    // Create map centered on Ha Giang
+    map = L.map('map').setView([22.8230, 104.9784], 9);
+    
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+    
+    // Remove placeholder
+    const placeholder = document.querySelector('.map-placeholder');
+    if (placeholder) {
+        placeholder.remove();
+    }
+}
+
+// Update map with current day locations
+function updateMap() {
+    if (!map) return;
+    
+    // Clear existing markers and route
+    markers.forEach(marker => map.removeLayer(marker));
+    markers = [];
+    
+    if (routePolyline) {
+        map.removeLayer(routePolyline);
+        routePolyline = null;
+    }
+    
+    const dayData = currentData.days[currentDay - 1];
+    const validLocations = dayData.locations.filter(loc => loc.lat && loc.lng);
+    
+    if (validLocations.length === 0) return;
+    
+    // Add markers for each location
+    validLocations.forEach((location, index) => {
+        const marker = L.marker([location.lat, location.lng]).addTo(map);
+        
+        // Create popup content
+        const popupContent = `
+            <div style="min-width: 200px;">
+                <h3 style="margin: 0 0 8px 0; font-size: 1.1rem; font-weight: 700;">${location.id}. ${location.name}</h3>
+                ${location.time ? `<p style="margin: 4px 0; font-size: 0.9rem;">⏰ ${location.time}</p>` : ''}
+                ${location.activities ? `<p style="margin: 4px 0; font-size: 0.9rem;">📍 ${location.activities}</p>` : ''}
+            </div>
+        `;
+        
+        marker.bindPopup(popupContent);
+        markers.push(marker);
+    });
+    
+    // Fit map to show all markers
+    if (validLocations.length > 0) {
+        const bounds = L.latLngBounds(validLocations.map(loc => [loc.lat, loc.lng]));
+        map.fitBounds(bounds, { padding: [50, 50] });
+    }
+    
+    // Show route if enabled
+    if (showingRoute) {
+        showRoute();
+    }
+}
+
+// Show route between locations
+function showRoute() {
+    if (!map) return;
+    
+    const dayData = currentData.days[currentDay - 1];
+    const validLocations = dayData.locations.filter(loc => loc.lat && loc.lng);
+    
+    if (validLocations.length < 2) {
+        alert('Cần ít nhất 2 địa điểm có tọa độ để hiển thị tuyến đường');
+        return;
+    }
+    
+    // Remove existing route
+    if (routePolyline) {
+        map.removeLayer(routePolyline);
+    }
+    
+    // Create route polyline
+    const routeCoords = validLocations.map(loc => [loc.lat, loc.lng]);
+    routePolyline = L.polyline(routeCoords, {
+        color: '#3b82f6',
+        weight: 4,
+        opacity: 0.7,
+        smoothFactor: 1
+    }).addTo(map);
+    
+    showingRoute = true;
+    document.getElementById('showRouteBtn').textContent = 'Ẩn tuyến đường';
+}
+
+// Hide route
+function hideRoute() {
+    if (routePolyline) {
+        map.removeLayer(routePolyline);
+        routePolyline = null;
+    }
+    showingRoute = false;
+    document.getElementById('showRouteBtn').textContent = 'Hiện tuyến đường';
+}
+
+// Toggle route visibility
+function toggleRoute() {
+    if (showingRoute) {
+        hideRoute();
+    } else {
+        showRoute();
+    }
 }
 
 // Initialize app when DOM is ready
