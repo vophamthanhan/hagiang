@@ -137,20 +137,6 @@
         },
         {
           "id": 3,
-          "name": "Coffee Thẩm Mã",
-          "time": "08:00",
-          "activities": "",
-          "meals": "",
-          "accommodation": "",
-          "clothing": null,
-          "note": "",
-          "lat": 23.2772003,
-          "lng": 105.2882046,
-          "distance": 0,
-          "duration": 0
-        },
-        {
-          "id": 4,
           "name": "Phim trường \"Chuyện của Pao\"",
           "time": "09:15",
           "activities": "",
@@ -162,6 +148,20 @@
           "clothing": null,
           "distance": null,
           "duration": null
+        },
+        {
+          "id": 4,
+          "name": "Coffee Thẩm Mã",
+          "time": "09:30",
+          "activities": "",
+          "meals": "",
+          "accommodation": "",
+          "clothing": null,
+          "note": "",
+          "lat": 23.2772003,
+          "lng": 105.2882046,
+          "distance": 0,
+          "duration": 0
         },
         {
           "id": 5,
