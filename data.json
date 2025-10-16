@@ -285,20 +285,6 @@
         {
           "id": 5,
           "name": "TP. Hà Giang",
-          "time": "17:00",
-          "activities": "Ăn tối",
-          "meals": "Tối",
-          "accommodation": "",
-          "lat": 22.727778,
-          "lng": 105,
-          "note": "Mua sắm quà lưu niệm (nếu có).",
-          "clothing": [],
-          "distance": null,
-          "duration": null
-        },
-        {
-          "id": 6,
-          "name": "TP. Hà Giang",
           "time": "19:00",
           "activities": "Nghỉ đêm tại khách sạn/homestay",
           "meals": "",
