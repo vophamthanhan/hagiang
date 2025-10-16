@@ -238,15 +238,15 @@
         },
         {
           "id": 8,
-          "name": "Homestay Đồng Văn (cần tìm cụ thể)",
+          "name": "Homestay Đồng Văn",
           "time": "16:00",
           "activities": "Nhận phòng, ăn tối",
           "meals": "Tối",
-          "accommodation": "Homestay Đồng Văn (cần tìm cụ thể)",
+          "accommodation": "Homestay Đồng Văn",
           "lat": null,
           "lng": null,
           "note": "Nghỉ ngơi tại Đồng Văn.",
-          "clothing": [],
+          "clothing": null,
           "distance": null,
           "duration": null
         }
