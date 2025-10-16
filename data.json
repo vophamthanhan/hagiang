@@ -399,8 +399,8 @@
           "accommodation": "",
           "lat": 16.079998,
           "lng": 108.150002,
-          "note": "Chúc mừng bạn đã hoàn thành chuyến đi Hà Giang!",
-          "clothing": [],
+          "note": "Hoàn thành chuyến đi Hà Giang!",
+          "clothing": null,
           "distance": null,
           "duration": null
         }
