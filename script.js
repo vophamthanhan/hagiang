@@ -1,5 +1,5 @@
 // Global state
-let currentData = JSON.parse(JSON.stringify(defaultData)); // Clone from data.js
+let currentData = null; // Will be loaded from data.json
 let currentDay = 1;
 let editingLocation = null;
 let showingRoute = false;
@@ -37,10 +37,13 @@ async function init() {
     // Load token from localStorage if config.js not available
     loadTokenFromStorage();
     
-    // Try to load data from GitHub
-    const githubData = await loadDataFromGitHub();
-    if (githubData) {
-        currentData = githubData;
+    // Try to load data from GitHub or local
+    const loadedData = await loadDataFromGitHub();
+    if (loadedData) {
+        currentData = loadedData;
+    } else {
+        // Fallback to empty structure
+        currentData = { days: [] };
     }
     
     // Load saved view mode
@@ -64,10 +67,13 @@ function attachEventListeners() {
         });
     });
 
-    resetBtn.addEventListener('click', () => {
+    resetBtn.addEventListener('click', async () => {
         if (confirm('Bạn có chắc chắn muốn khôi phục dữ liệu ban đầu? Tất cả thay đổi sẽ bị mất.')) {
-            currentData = resetData();
-            renderDay(currentDay);
+            const localData = await loadLocalData();
+            if (localData) {
+                currentData = localData;
+                renderDay(currentDay);
+            }
         }
     });
 
@@ -915,8 +921,8 @@ function updateTokenStatus() {
 async function loadDataFromGitHub() {
     const config = window.GITHUB_CONFIG;
     if (!config || !config.token) {
-        console.log('No GitHub token, using default data');
-        return null;
+        console.log('No GitHub token, using local data');
+        return await loadLocalData();
     }
 
     try {
@@ -930,8 +936,8 @@ async function loadDataFromGitHub() {
 
         if (!response.ok) {
             if (response.status === 404) {
-                console.log('data.js not found in repository, using default data');
-                return null;
+                console.log('data.json not found in repository, using local data');
+                return await loadLocalData();
             }
             throw new Error(`GitHub API error: ${response.status}`);
         }
@@ -939,31 +945,39 @@ async function loadDataFromGitHub() {
         const result = await response.json();
         gitHubFileSha = result.sha; // Store SHA for updates
         
-        // Decode base64 content
-        const content = atob(result.content);
-        
-        // Extract defaultData from the file by executing it in a safe context
-        try {
-            // Create a safe evaluation context
-            const dataMatch = content.match(/const defaultData = ({[\s\S]*});/);
-            if (dataMatch) {
-                // Use Function constructor to safely evaluate the JavaScript object
-                const evalFunc = new Function('return ' + dataMatch[1]);
-                const data = evalFunc();
-                console.log('Loaded data from GitHub');
-                return data;
-            }
-        } catch (parseError) {
-            console.error('Error parsing data object:', parseError);
+        // Decode base64 content with proper UTF-8 handling
+        const base64Content = result.content.replace(/\s/g, '');
+        const binaryString = atob(base64Content);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
         }
+        const content = new TextDecoder('utf-8').decode(bytes);
         
-        console.log('Could not parse data from GitHub file');
-        return null;
+        // Parse JSON
+        const data = JSON.parse(content);
+        console.log('✅ Loaded data from GitHub with UTF-8 encoding');
+        return data;
     } catch (error) {
         console.error('Error loading from GitHub:', error);
         showSaveStatus(`❌ Lỗi tải dữ liệu: ${error.message}`, 'error');
-        return null;
+        return await loadLocalData();
     }
+}
+
+// Load local data.json file
+async function loadLocalData() {
+    try {
+        const response = await fetch('data.json');
+        if (response.ok) {
+            const data = await response.json();
+            console.log('✅ Loaded local data.json');
+            return data;
+        }
+    } catch (error) {
+        console.error('Error loading local data:', error);
+    }
+    return null;
 }
 
 async function saveDataToGitHub(data) {
@@ -974,9 +988,13 @@ async function saveDataToGitHub(data) {
     }
 
     try {
-        // Generate the new file content
-        const fileContent = `const defaultData = ${JSON.stringify(data, null, 2)};`;
-        const encodedContent = btoa(unescape(encodeURIComponent(fileContent)));
+        // Generate JSON content with proper UTF-8 encoding
+        const jsonContent = JSON.stringify(data, null, 2);
+        
+        // Encode to base64 with UTF-8
+        const utf8Bytes = new TextEncoder().encode(jsonContent);
+        const binaryString = Array.from(utf8Bytes, byte => String.fromCharCode(byte)).join('');
+        const encodedContent = btoa(binaryString);
 
         // If we don't have SHA, try to get it first
         if (!gitHubFileSha) {
