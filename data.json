@@ -32,20 +32,6 @@
         },
         {
           "id": 2,
-          "name": "Trên đường đi",
-          "time": "06:00",
-          "activities": "Ăn sáng nhẹ",
-          "meals": "Sáng",
-          "accommodation": "",
-          "lat": null,
-          "lng": null,
-          "note": "Nghỉ ngơi, ăn uống nhanh gọn.",
-          "clothing": [],
-          "distance": null,
-          "duration": null
-        },
-        {
-          "id": 3,
           "name": "TP. Hà Giang",
           "time": "12:00",
           "activities": "Tới TP. Hà Giang, check-in cột mốc KM0",
@@ -59,7 +45,7 @@
           "duration": null
         },
         {
-          "id": 4,
+          "id": 3,
           "name": "TP. Hà Giang",
           "time": "13:00",
           "activities": "Nghỉ ngơi nhẹ",
@@ -73,7 +59,7 @@
           "duration": null
         },
         {
-          "id": 5,
+          "id": 4,
           "name": "Cây xăng Quản Bạ",
           "time": "14:00",
           "activities": "Đổ xăng, nghỉ chân",
@@ -87,7 +73,7 @@
           "duration": null
         },
         {
-          "id": 6,
+          "id": 5,
           "name": "Núi đôi Cô Tiên",
           "time": "15:00",
           "activities": "Tham quan, chụp ảnh",
@@ -101,7 +87,7 @@
           "duration": null
         },
         {
-          "id": 7,
+          "id": 6,
           "name": "Cổng Trời Quản Bạ",
           "time": "16:00",
           "activities": "Ngắm cảnh hoàng hôn",
@@ -115,7 +101,7 @@
           "duration": null
         },
         {
-          "id": 8,
+          "id": 7,
           "name": "Homestay Lô Lô Time",
           "time": "18:00",
           "activities": "Nhận phòng, ăn tối",
@@ -129,7 +115,7 @@
           "duration": null
         },
         {
-          "id": 9,
+          "id": 8,
           "name": "Địa điểm mới",
           "time": "",
           "activities": "",
