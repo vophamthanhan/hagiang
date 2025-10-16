@@ -74,20 +74,6 @@
         },
         {
           "id": 5,
-          "name": "Coffee Thẩm Mã",
-          "time": "17:00",
-          "activities": "",
-          "meals": "",
-          "accommodation": "",
-          "clothing": null,
-          "note": "",
-          "lat": 23.1535113,
-          "lng": 105.0141091,
-          "distance": 0,
-          "duration": 0
-        },
-        {
-          "id": 6,
           "name": "Dốc Chín Khoanh",
           "time": "17:15",
           "activities": "",
@@ -101,7 +87,7 @@
           "duration": 0
         },
         {
-          "id": 7,
+          "id": 6,
           "name": "Homestay Lô Lô Time",
           "time": "18:00",
           "activities": "Nhận phòng, ăn tối",
