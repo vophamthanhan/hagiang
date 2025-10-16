@@ -515,6 +515,121 @@ body {
     margin-bottom: 0;
 }
 
+/* Clothing Management */
+.clothing-manager {
+    margin-top: 8px;
+}
+
+.clothing-input-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.clothing-input-row label {
+    margin: 0;
+    font-weight: 600;
+}
+
+.clothing-input-row input {
+    padding: 6px 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.btn-generate-clothing {
+    padding: 8px 16px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-generate-clothing:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+#clothingTableContainer {
+    margin-top: 12px;
+}
+
+.clothing-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.clothing-table thead {
+    background: #f3f4f6;
+}
+
+.clothing-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.9rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.clothing-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.clothing-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.clothing-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.clothing-table input,
+.clothing-table textarea {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-family: inherit;
+}
+
+.clothing-table textarea {
+    resize: vertical;
+    min-height: 40px;
+}
+
+.clothing-table input:focus,
+.clothing-table textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+    .clothing-table {
+        font-size: 0.85rem;
+    }
+    
+    .clothing-table th,
+    .clothing-table td {
+        padding: 8px;
+    }
+}
+
 /* Modal */
 .modal {
     display: none;

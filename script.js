@@ -60,6 +60,12 @@ function attachEventListeners() {
         e.preventDefault();
         saveLocationEdit();
     });
+    
+    // Generate clothing table button
+    document.getElementById('generateClothingBtn').addEventListener('click', () => {
+        const numPeople = parseInt(document.getElementById('numPeople').value) || 1;
+        generateClothingTable(numPeople);
+    });
 
     // Close modal when clicking outside
     editModal.addEventListener('click', (e) => {
@@ -143,6 +149,26 @@ function sortLocationsByTime(locations) {
     });
 }
 
+// Format clothing display for location list
+function formatClothingDisplay(clothing) {
+    if (!clothing) return '';
+    
+    if (Array.isArray(clothing)) {
+        const summary = clothing
+            .filter(person => person.name || person.clothing)
+            .map(person => {
+                const name = person.name || 'Người ' + (clothing.indexOf(person) + 1);
+                const clothingText = person.clothing ? person.clothing.substring(0, 30) + (person.clothing.length > 30 ? '...' : '') : '';
+                return `${name}: ${clothingText}`;
+            })
+            .join('; ');
+        return summary || 'Chưa có thông tin';
+    }
+    
+    // Legacy format (old text-based clothing)
+    return clothing;
+}
+
 // Create location element
 function createLocationElement(location, index) {
     const div = document.createElement('div');
@@ -205,7 +231,7 @@ function createLocationElement(location, index) {
                                 <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
                                 <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                             </svg>
-                            <span><strong>Trang phục:</strong> ${location.clothing}</span>
+                            <span><strong>Trang phục${Array.isArray(location.clothing) ? ` (${location.clothing.length} người)` : ''}:</strong> ${formatClothingDisplay(location.clothing)}</span>
                         </div>
                     ` : ''}
                     ${location.note ? `
@@ -305,12 +331,96 @@ function openEditModal(location, index) {
     document.getElementById('editActivities').value = location.activities || '';
     document.getElementById('editMeals').value = location.meals || '';
     document.getElementById('editAccommodation').value = location.accommodation || '';
-    document.getElementById('editClothing').value = location.clothing || '';
     document.getElementById('editNote').value = location.note || '';
     document.getElementById('editLat').value = location.lat || '';
     document.getElementById('editLng').value = location.lng || '';
     
+    // Load clothing data
+    loadClothingData(location.clothing);
+    
     editModal.classList.add('active');
+}
+
+// Load clothing data into table
+function loadClothingData(clothingData) {
+    const container = document.getElementById('clothingTableContainer');
+    const numPeopleInput = document.getElementById('numPeople');
+    
+    if (!clothingData || !Array.isArray(clothingData) || clothingData.length === 0) {
+        container.innerHTML = '';
+        numPeopleInput.value = 1;
+        return;
+    }
+    
+    numPeopleInput.value = clothingData.length;
+    generateClothingTable(clothingData.length, clothingData);
+}
+
+// Generate clothing table
+function generateClothingTable(numPeople, existingData = null) {
+    const container = document.getElementById('clothingTableContainer');
+    
+    if (numPeople < 1) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    let tableHTML = `
+        <table class="clothing-table">
+            <thead>
+                <tr>
+                    <th style="width: 30px;">#</th>
+                    <th style="width: 25%;">Tên</th>
+                    <th style="width: 40%;">Trang phục</th>
+                    <th style="width: 35%;">Ghi chú</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    for (let i = 0; i < numPeople; i++) {
+        const personData = existingData && existingData[i] ? existingData[i] : { name: '', clothing: '', note: '' };
+        tableHTML += `
+            <tr>
+                <td>${i + 1}</td>
+                <td><input type="text" class="person-name" data-index="${i}" value="${personData.name || ''}" placeholder="VD: An"></td>
+                <td><textarea class="person-clothing" data-index="${i}" placeholder="VD: Áo khoác, Quần jean...">${personData.clothing || ''}</textarea></td>
+                <td><textarea class="person-note" data-index="${i}" placeholder="Ghi chú thêm...">${personData.note || ''}</textarea></td>
+            </tr>
+        `;
+    }
+    
+    tableHTML += `
+            </tbody>
+        </table>
+    `;
+    
+    container.innerHTML = tableHTML;
+}
+
+// Get clothing data from table
+function getClothingDataFromTable() {
+    const container = document.getElementById('clothingTableContainer');
+    const table = container.querySelector('.clothing-table');
+    
+    if (!table) return null;
+    
+    const clothingData = [];
+    const rows = table.querySelectorAll('tbody tr');
+    
+    rows.forEach((row, index) => {
+        const name = row.querySelector('.person-name').value.trim();
+        const clothing = row.querySelector('.person-clothing').value.trim();
+        const note = row.querySelector('.person-note').value.trim();
+        
+        clothingData.push({
+            name: name,
+            clothing: clothing,
+            note: note
+        });
+    });
+    
+    return clothingData.length > 0 ? clothingData : null;
 }
 
 // Close edit modal
@@ -318,6 +428,7 @@ function closeEditModal() {
     editModal.classList.remove('active');
     editingLocation = null;
     editForm.reset();
+    document.getElementById('clothingTableContainer').innerHTML = '';
 }
 
 // Save location edit
@@ -332,7 +443,7 @@ function saveLocationEdit() {
     location.activities = document.getElementById('editActivities').value;
     location.meals = document.getElementById('editMeals').value;
     location.accommodation = document.getElementById('editAccommodation').value;
-    location.clothing = document.getElementById('editClothing').value;
+    location.clothing = getClothingDataFromTable();
     location.note = document.getElementById('editNote').value;
     location.lat = parseFloat(document.getElementById('editLat').value) || null;
     location.lng = parseFloat(document.getElementById('editLng').value) || null;
@@ -370,7 +481,7 @@ function addNewLocation() {
         activities: "",
         meals: "",
         accommodation: "",
-        clothing: "",
+        clothing: null,
         note: "",
         lat: null,
         lng: null,
