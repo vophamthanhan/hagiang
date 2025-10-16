@@ -32,14 +32,14 @@
         },
         {
           "id": 2,
-          "name": "TP. Hà Giang",
+          "name": "Tới TP. Hà Giang - Thuê Xe",
           "time": "07:00",
-          "activities": "Tới TP. Hà Giang, check-in cột mốc KM0",
-          "meals": "Trưa",
+          "activities": "Tới TP. Hà Giang",
+          "meals": "",
           "accommodation": "",
           "lat": 22.8274375,
           "lng": 104.9841875,
-          "note": "Mua cuốn hộ chiếu Hà Giang\n-\nThử kem cột mốc",
+          "note": "Mua cuốn hộ chiếu Hà Giang\n- Thử kem cột mốc",
           "clothing": null,
           "distance": null,
           "duration": null
