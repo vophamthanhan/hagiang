@@ -956,32 +956,36 @@ async function extractCoordinatesFromLink(link) {
     searchResults.style.display = 'none';
     
     try {
-        // Pattern 1: Direct coordinates in URL (@lat,lng)
-        let match = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+        // IMPORTANT: Check !3d!4d FIRST because these are the actual place coordinates
+        // The @ coordinates are often just the map view center, not the place location
+        
+        // Pattern 1: Query string coordinates (!3d lat and !4d lng) - HIGHEST PRIORITY
+        let match = link.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
         if (match) {
-            console.log('Found coordinates with @ pattern:', match[1], match[2]);
+            console.log('Found coordinates with !3d!4d pattern (place coords):', match[1], match[2]);
             const lat = parseFloat(match[1]);
             const lng = parseFloat(match[2]);
             await reverseGeocode(lat, lng);
             return;
         }
         
-        // Pattern 2: Query string coordinates (!3d and !4d)
-        match = link.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
-        if (match) {
-            console.log('Found coordinates with !3d!4d pattern:', match[1], match[2]);
-            const lat = parseFloat(match[1]);
-            const lng = parseFloat(match[2]);
-            await reverseGeocode(lat, lng);
-            return;
-        }
-        
-        // Pattern 3: Coordinates with !2d (lng) and !3d (lat)
+        // Pattern 2: Coordinates with !2d (lng) and !3d (lat)
         match = link.match(/!2d(-?\d+\.\d+)!3d(-?\d+\.\d+)/);
         if (match) {
             console.log('Found coordinates with !2d!3d pattern:', match[2], match[1]);
             const lng = parseFloat(match[1]);
             const lat = parseFloat(match[2]);
+            await reverseGeocode(lat, lng);
+            return;
+        }
+        
+        // Pattern 3: Direct coordinates in URL (@lat,lng) - LOWER PRIORITY
+        // These are often the map view center, not the actual place
+        match = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+        if (match) {
+            console.log('Found coordinates with @ pattern (view center):', match[1], match[2]);
+            const lat = parseFloat(match[1]);
+            const lng = parseFloat(match[2]);
             await reverseGeocode(lat, lng);
             return;
         }
