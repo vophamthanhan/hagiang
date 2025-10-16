@@ -295,11 +295,18 @@ function renderTableView() {
     
     currentData.days.forEach((day, dayIndex) => {
         const sortedLocations = sortLocationsByTime(day.locations);
+        const rowspan = sortedLocations.length; // Calculate rowspan for the day cell
+        
         sortedLocations.forEach((location, locIndex) => {
             const rowClass = dayIndex % 2 === 0 ? 'even-day' : 'odd-day';
+            tableHTML += `<tr class="${rowClass}">`;
+            
+            // Only add day cell for the first location of each day
+            if (locIndex === 0) {
+                tableHTML += `<td class="day-cell" rowspan="${rowspan}"><strong>${day.date}</strong><br><small>${day.title}</small></td>`;
+            }
+            
             tableHTML += `
-                <tr class="${rowClass}">
-                    <td class="day-cell"><strong>${day.date}</strong></td>
                     <td class="center">${location.id}</td>
                     <td class="center">${location.time || '-'}</td>
                     <td><strong>${location.name}</strong></td>
