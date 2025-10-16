@@ -106,9 +106,40 @@ function renderDay(day) {
 function renderLocations(locations) {
     locationList.innerHTML = '';
     
-    locations.forEach((location, index) => {
+    // Sort locations by time before rendering
+    const sortedLocations = sortLocationsByTime(locations);
+    
+    sortedLocations.forEach((location, index) => {
         const locationItem = createLocationElement(location, index);
         locationList.appendChild(locationItem);
+    });
+}
+
+// Sort locations by time
+function sortLocationsByTime(locations) {
+    return [...locations].sort((a, b) => {
+        // Extract start time from time string (e.g., "05:00" or "13:30-18:30")
+        const getStartTime = (timeStr) => {
+            if (!timeStr) return '99:99'; // Put items without time at the end
+            
+            // Handle range format like "13:30-18:30"
+            const startTime = timeStr.split('-')[0].trim();
+            
+            // Handle "HH:MM" format
+            const match = startTime.match(/(\d{1,2}):(\d{2})/);
+            if (match) {
+                const hours = match[1].padStart(2, '0');
+                const minutes = match[2];
+                return `${hours}:${minutes}`;
+            }
+            
+            return '99:99';
+        };
+        
+        const timeA = getStartTime(a.time);
+        const timeB = getStartTime(b.time);
+        
+        return timeA.localeCompare(timeB);
     });
 }
 
@@ -191,12 +222,22 @@ function createLocationElement(location, index) {
                     ` : ''}
                 </div>
             </div>
-            <button class="btn-edit" data-index="${index}">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 20h9"/>
-                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                </svg>
-            </button>
+            <div class="location-actions">
+                <button class="btn-edit" data-index="${index}" title="Chỉnh sửa">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 20h9"/>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                    </svg>
+                </button>
+                <button class="btn-delete" data-index="${index}" title="Xóa">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        <line x1="10" y1="11" x2="10" y2="17"/>
+                        <line x1="14" y1="11" x2="14" y2="17"/>
+                    </svg>
+                </button>
+            </div>
         </div>
         ${hasDistance ? `
             <div class="location-distance">
@@ -222,6 +263,12 @@ function createLocationElement(location, index) {
     const editBtn = div.querySelector('.btn-edit');
     editBtn.addEventListener('click', () => {
         openEditModal(location, index);
+    });
+    
+    // Attach delete button listener
+    const deleteBtn = div.querySelector('.btn-delete');
+    deleteBtn.addEventListener('click', () => {
+        deleteLocation(index);
     });
     
     return div;
@@ -290,16 +337,34 @@ function saveLocationEdit() {
     location.lat = parseFloat(document.getElementById('editLat').value) || null;
     location.lng = parseFloat(document.getElementById('editLng').value) || null;
     
+    // Re-number locations after sorting
+    renumberLocations(dayData.locations);
+    
     saveData(currentData);
     renderDay(currentDay);
     closeEditModal();
+}
+
+// Renumber locations based on sorted order
+function renumberLocations(locations) {
+    // Sort by time
+    const sorted = sortLocationsByTime(locations);
+    
+    // Update IDs
+    sorted.forEach((loc, index) => {
+        loc.id = index + 1;
+    });
+    
+    // Update the original array
+    locations.length = 0;
+    locations.push(...sorted);
 }
 
 // Add new location
 function addNewLocation() {
     const dayData = currentData.days[currentDay - 1];
     const newLocation = {
-        id: dayData.locations.length + 1,
+        id: dayData.locations.length + 1, // Temporary ID, will be renumbered
         name: "Địa điểm mới",
         time: "",
         activities: "",
@@ -314,11 +379,18 @@ function addNewLocation() {
     };
     
     dayData.locations.push(newLocation);
+    
+    // Renumber after adding
+    renumberLocations(dayData.locations);
+    
     saveData(currentData);
     renderDay(currentDay);
     
-    // Open edit modal for the new location
-    openEditModal(newLocation, dayData.locations.length - 1);
+    // Open edit modal for the new location (find it by time since index may change)
+    const newIndex = dayData.locations.findIndex(loc => loc.name === "Địa điểm mới" && loc.time === "");
+    if (newIndex !== -1) {
+        openEditModal(dayData.locations[newIndex], newIndex);
+    }
 }
 
 // Update map with current day locations using Google Maps
@@ -429,6 +501,27 @@ function openInGoogleMaps() {
         const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}${waypointsParam}&travelmode=driving`;
         window.open(url, '_blank');
     }
+}
+
+// Delete location
+function deleteLocation(index) {
+    const dayData = currentData.days[currentDay - 1];
+    const location = dayData.locations[index];
+    
+    // Confirm deletion
+    if (!confirm(`Bạn có chắc chắn muốn xóa địa điểm "${location.name}"?`)) {
+        return;
+    }
+    
+    // Remove location
+    dayData.locations.splice(index, 1);
+    
+    // Renumber remaining locations
+    renumberLocations(dayData.locations);
+    
+    // Save and re-render
+    saveData(currentData);
+    renderDay(currentDay);
 }
 
 // Initialize app when DOM is ready

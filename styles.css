@@ -343,7 +343,14 @@ body {
     margin-top: 2px;
 }
 
-.btn-edit {
+.location-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.btn-edit,
+.btn-delete {
     background: none;
     border: 2px solid #e5e7eb;
     width: 36px;
@@ -361,6 +368,20 @@ body {
     border-color: #3b82f6;
     background: #eff6ff;
     transform: scale(1.1);
+}
+
+.btn-delete {
+    border-color: #fecaca;
+}
+
+.btn-delete:hover {
+    border-color: #ef4444;
+    background: #fee2e2;
+    transform: scale(1.1);
+}
+
+.btn-delete svg {
+    color: #ef4444;
 }
 
 .location-distance {
