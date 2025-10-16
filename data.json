@@ -270,6 +270,20 @@
         },
         {
           "id": 3,
+          "name": "Pavi Hmong Village",
+          "time": "11:00",
+          "activities": "",
+          "meals": "",
+          "accommodation": "",
+          "clothing": null,
+          "note": "",
+          "lat": null,
+          "lng": null,
+          "distance": 0,
+          "duration": 0
+        },
+        {
+          "id": 4,
           "name": "Sông Nho Quế",
           "time": "14:30",
           "activities": "",
@@ -283,7 +297,7 @@
           "duration": null
         },
         {
-          "id": 4,
+          "id": 5,
           "name": "Về Đồng Văn nghỉ ngơi",
           "time": "19:00",
           "activities": "Nghỉ đêm tại home",
@@ -295,20 +309,6 @@
           "clothing": null,
           "distance": null,
           "duration": null
-        },
-        {
-          "id": 5,
-          "name": "Địa điểm mới",
-          "time": "",
-          "activities": "",
-          "meals": "",
-          "accommodation": "",
-          "clothing": null,
-          "note": "",
-          "lat": null,
-          "lng": null,
-          "distance": 0,
-          "duration": 0
         }
       ]
     },
