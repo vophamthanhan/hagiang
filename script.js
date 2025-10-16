@@ -20,7 +20,6 @@ const cancelBtn = document.getElementById('cancelBtn');
 const editForm = document.getElementById('editForm');
 const settingsModal = document.getElementById('settingsModal');
 const settingsBtn = document.getElementById('settingsBtn');
-const backupBtn = document.getElementById('backupBtn');
 const closeSettingsModal = document.getElementById('closeSettingsModal');
 const settingsForm = document.getElementById('settingsForm');
 const tokenInput = document.getElementById('tokenInput');
@@ -98,9 +97,6 @@ function attachEventListeners() {
     // Settings button
     settingsBtn.addEventListener('click', openSettingsModal);
     closeSettingsModal.addEventListener('click', closeSettings);
-    
-    // Backup button
-    backupBtn.addEventListener('click', downloadBackup);
     
     // Settings form
     settingsForm.addEventListener('submit', (e) => {
@@ -504,7 +500,7 @@ function saveLocationEdit() {
     // Re-number locations after sorting
     renumberLocations(dayData.locations);
     
-    saveDataWithBackup(currentData);
+    saveData(currentData);
     renderDay(currentDay);
     closeEditModal();
 }
@@ -547,7 +543,7 @@ function addNewLocation() {
     // Renumber after adding
     renumberLocations(dayData.locations);
     
-    saveDataWithBackup(currentData);
+    saveData(currentData);
     renderDay(currentDay);
     
     // Open edit modal for the new location (find it by time since index may change)
@@ -684,7 +680,7 @@ function deleteLocation(index) {
     renumberLocations(dayData.locations);
     
     // Save and re-render
-    saveDataWithBackup(currentData);
+    saveData(currentData);
     renderDay(currentDay);
 }
 
@@ -1032,44 +1028,8 @@ function showSaveStatus(message, type = 'info') {
 }
 
 // ============================================
-// BACKUP FUNCTIONALITY
+// DATA SAVE FUNCTIONS
 // ============================================
-
-function downloadBackup() {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-    const filename = `hagiang-backup-${timestamp}.json`;
-    
-    const backupData = {
-        version: '1.0',
-        timestamp: new Date().toISOString(),
-        data: currentData
-    };
-    
-    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    showSaveStatus(`📥 Đã tải backup: ${filename}`, 'success');
-}
-
-// Modified saveData to create backup before saving
-async function saveDataWithBackup(data) {
-    // Auto backup before save
-    const autoBackup = localStorage.getItem('autoBackup');
-    if (autoBackup !== 'false') {
-        downloadBackup();
-    }
-    
-    // Save to GitHub
-    await saveData(data);
-}
 
 // Save data function - calls GitHub API
 async function saveData(data) {
