@@ -102,6 +102,20 @@
         },
         {
           "id": 7,
+          "name": "Phim trường \"Chuyện của Pao\"",
+          "time": "13:50",
+          "activities": "",
+          "meals": "",
+          "accommodation": "",
+          "clothing": null,
+          "note": "",
+          "lat": 23.232248119888695,
+          "lng": 105.1614043017174,
+          "distance": 0,
+          "duration": 0
+        },
+        {
+          "id": 8,
           "name": "Homestay ở Lô Lô Chải",
           "time": "18:00",
           "activities": "Nhận phòng, ăn tối",
@@ -113,20 +127,6 @@
           "clothing": null,
           "distance": null,
           "duration": null
-        },
-        {
-          "id": 8,
-          "name": "Địa điểm mới",
-          "time": "",
-          "activities": "",
-          "meals": "",
-          "accommodation": "",
-          "clothing": null,
-          "note": "",
-          "lat": null,
-          "lng": null,
-          "distance": 0,
-          "duration": 0
         }
       ]
     },
