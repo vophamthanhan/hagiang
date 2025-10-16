@@ -137,20 +137,6 @@
         },
         {
           "id": 3,
-          "name": "Phim trường \"Chuyện của Pao\"",
-          "time": "09:15",
-          "activities": "",
-          "meals": "",
-          "accommodation": "",
-          "lat": 23.225789,
-          "lng": 105.2011853,
-          "note": "",
-          "clothing": null,
-          "distance": null,
-          "duration": null
-        },
-        {
-          "id": 4,
           "name": "Coffee Thẩm Mã",
           "time": "09:30",
           "activities": "",
@@ -164,7 +150,7 @@
           "duration": 0
         },
         {
-          "id": 5,
+          "id": 4,
           "name": "Dinh Vua Mèo",
           "time": "10:00",
           "activities": "Tham quan Dinh Vua Mèo",
@@ -174,6 +160,20 @@
           "lng": 105.2037602,
           "note": "Tìm hiểu lịch sử, kiến trúc độc đáo.",
           "clothing": [],
+          "distance": null,
+          "duration": null
+        },
+        {
+          "id": 5,
+          "name": "Phim trường \"Chuyện của Pao\"",
+          "time": "10:20",
+          "activities": "",
+          "meals": "",
+          "accommodation": "",
+          "lat": 23.2200369,
+          "lng": 105.1600717,
+          "note": "",
+          "clothing": null,
           "distance": null,
           "duration": null
         },
