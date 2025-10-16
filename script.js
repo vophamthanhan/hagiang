@@ -27,6 +27,9 @@ const tokenInput = document.getElementById('tokenInput');
 const toggleTokenBtn = document.getElementById('toggleTokenBtn');
 const clearTokenBtn = document.getElementById('clearTokenBtn');
 const tokenStatus = document.getElementById('tokenStatus');
+const mapsLinkInput = document.getElementById('mapsLink');
+const extractBtn = document.getElementById('extractBtn');
+const extractStatus = document.getElementById('extractStatus');
 
 // Initialize app
 async function init() {
@@ -88,6 +91,9 @@ function attachEventListeners() {
         const numPeople = parseInt(document.getElementById('numPeople').value) || 1;
         generateClothingTable(numPeople);
     });
+    
+    // Extract coordinates from Google Maps link
+    extractBtn.addEventListener('click', extractCoordinatesFromLink);
     
     // Settings button
     settingsBtn.addEventListener('click', openSettingsModal);
@@ -680,6 +686,94 @@ function deleteLocation(index) {
     // Save and re-render
     saveDataWithBackup(currentData);
     renderDay(currentDay);
+}
+
+// ============================================
+// GOOGLE MAPS LINK EXTRACTION
+// ============================================
+
+async function extractCoordinatesFromLink() {
+    const link = mapsLinkInput.value.trim();
+    
+    if (!link) {
+        showExtractStatus('⚠️ Vui lòng nhập link Google Maps', 'error');
+        return;
+    }
+    
+    try {
+        showExtractStatus('🔄 Đang xử lý...', 'info');
+        
+        // Pattern 1: Direct coordinates in URL (e.g., ?q=lat,lng or @lat,lng)
+        const coordPattern1 = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
+        const coordPattern2 = /q=(-?\d+\.\d+),(-?\d+\.\d+)/;
+        const coordPattern3 = /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/;
+        
+        let match = link.match(coordPattern1) || link.match(coordPattern2);
+        
+        if (match) {
+            const lat = parseFloat(match[1]);
+            const lng = parseFloat(match[2]);
+            
+            document.getElementById('editLat').value = lat;
+            document.getElementById('editLng').value = lng;
+            showExtractStatus(`✅ Đã lấy tọa độ: ${lat.toFixed(6)}, ${lng.toFixed(6)}`, 'success');
+            return;
+        }
+        
+        // Pattern 2: Place data with coordinates
+        match = link.match(coordPattern3);
+        if (match) {
+            const lat = parseFloat(match[1]);
+            const lng = parseFloat(match[2]);
+            
+            document.getElementById('editLat').value = lat;
+            document.getElementById('editLng').value = lng;
+            showExtractStatus(`✅ Đã lấy tọa độ: ${lat.toFixed(6)}, ${lng.toFixed(6)}`, 'success');
+            return;
+        }
+        
+        // Pattern 3: Short link (goo.gl) - need to follow redirect
+        if (link.includes('maps.app.goo.gl') || link.includes('goo.gl')) {
+            try {
+                const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(link)}`);
+                const html = await response.text();
+                
+                // Try to find coordinates in the redirected HTML
+                const metaMatch = html.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || 
+                                 html.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+                
+                if (metaMatch) {
+                    const lat = parseFloat(metaMatch[1]);
+                    const lng = parseFloat(metaMatch[2]);
+                    
+                    document.getElementById('editLat').value = lat;
+                    document.getElementById('editLng').value = lng;
+                    showExtractStatus(`✅ Đã lấy tọa độ: ${lat.toFixed(6)}, ${lng.toFixed(6)}`, 'success');
+                    return;
+                }
+            } catch (error) {
+                console.error('Error fetching short link:', error);
+            }
+        }
+        
+        showExtractStatus('❌ Không tìm thấy tọa độ trong link này. Hãy thử mở link trên Google Maps và copy link đầy đủ.', 'error');
+        
+    } catch (error) {
+        console.error('Error extracting coordinates:', error);
+        showExtractStatus('❌ Lỗi khi xử lý link: ' + error.message, 'error');
+    }
+}
+
+function showExtractStatus(message, type) {
+    extractStatus.textContent = message;
+    extractStatus.className = `extract-status ${type}`;
+    
+    if (type === 'success' || type === 'error') {
+        setTimeout(() => {
+            extractStatus.textContent = '';
+            extractStatus.className = 'extract-status';
+        }, 5000);
+    }
 }
 
 // ============================================
