@@ -721,6 +721,23 @@ function deleteLocation(index) {
 // GOOGLE MAPS LINK EXTRACTION
 // ============================================
 
+// Helper function to update coordinates and map
+function updateCoordinatesAndMap(lat, lng) {
+    document.getElementById('editLat').value = lat;
+    document.getElementById('editLng').value = lng;
+    
+    // Auto update location object and refresh map
+    if (editingLocation !== null) {
+        const dayData = currentData.days[currentDay - 1];
+        const location = dayData.locations[editingLocation];
+        location.lat = lat;
+        location.lng = lng;
+        updateMap(); // Refresh map with new coordinates
+    }
+    
+    showExtractStatus(`✅ Đã lấy tọa độ: ${lat.toFixed(6)}, ${lng.toFixed(6)}`, 'success');
+}
+
 async function extractCoordinatesFromLink() {
     const link = mapsLinkInput.value.trim();
     
@@ -742,10 +759,7 @@ async function extractCoordinatesFromLink() {
         if (match) {
             const lat = parseFloat(match[1]);
             const lng = parseFloat(match[2]);
-            
-            document.getElementById('editLat').value = lat;
-            document.getElementById('editLng').value = lng;
-            showExtractStatus(`✅ Đã lấy tọa độ: ${lat.toFixed(6)}, ${lng.toFixed(6)}`, 'success');
+            updateCoordinatesAndMap(lat, lng);
             return;
         }
         
@@ -754,10 +768,7 @@ async function extractCoordinatesFromLink() {
         if (match) {
             const lat = parseFloat(match[1]);
             const lng = parseFloat(match[2]);
-            
-            document.getElementById('editLat').value = lat;
-            document.getElementById('editLng').value = lng;
-            showExtractStatus(`✅ Đã lấy tọa độ: ${lat.toFixed(6)}, ${lng.toFixed(6)}`, 'success');
+            updateCoordinatesAndMap(lat, lng);
             return;
         }
         
@@ -774,10 +785,7 @@ async function extractCoordinatesFromLink() {
                 if (metaMatch) {
                     const lat = parseFloat(metaMatch[1]);
                     const lng = parseFloat(metaMatch[2]);
-                    
-                    document.getElementById('editLat').value = lat;
-                    document.getElementById('editLng').value = lng;
-                    showExtractStatus(`✅ Đã lấy tọa độ: ${lat.toFixed(6)}, ${lng.toFixed(6)}`, 'success');
+                    updateCoordinatesAndMap(lat, lng);
                     return;
                 }
             } catch (error) {
