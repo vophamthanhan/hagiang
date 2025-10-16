@@ -2,9 +2,6 @@
 let currentData = initializeData();
 let currentDay = 1;
 let editingLocation = null;
-let map = null;
-let markers = [];
-let routePolyline = null;
 let showingRoute = false;
 
 // DOM elements
@@ -23,7 +20,7 @@ const editForm = document.getElementById('editForm');
 
 // Initialize app
 function init() {
-    initMap();
+    updateMap();
     renderDay(currentDay);
     attachEventListeners();
 }
@@ -50,6 +47,10 @@ function attachEventListeners() {
 
     document.getElementById('showRouteBtn').addEventListener('click', () => {
         toggleRoute();
+    });
+
+    document.getElementById('openMapsBtn').addEventListener('click', () => {
+        openInGoogleMaps();
     });
 
     closeModal.addEventListener('click', closeEditModal);
@@ -165,6 +166,29 @@ function createLocationElement(location, index) {
                             <span>${location.accommodation}</span>
                         </div>
                     ` : ''}
+                    ${location.clothing ? `
+                        <div class="location-detail clothing-detail">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                            <span><strong>Trang phục:</strong> ${location.clothing}</span>
+                        </div>
+                    ` : ''}
+                    ${location.note ? `
+                        <div class="location-detail location-note">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10 9 9 9 8 9"/>
+                            </svg>
+                            <span>${location.note}</span>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
             <button class="btn-edit" data-index="${index}">
@@ -234,6 +258,8 @@ function openEditModal(location, index) {
     document.getElementById('editActivities').value = location.activities || '';
     document.getElementById('editMeals').value = location.meals || '';
     document.getElementById('editAccommodation').value = location.accommodation || '';
+    document.getElementById('editClothing').value = location.clothing || '';
+    document.getElementById('editNote').value = location.note || '';
     document.getElementById('editLat').value = location.lat || '';
     document.getElementById('editLng').value = location.lng || '';
     
@@ -259,6 +285,8 @@ function saveLocationEdit() {
     location.activities = document.getElementById('editActivities').value;
     location.meals = document.getElementById('editMeals').value;
     location.accommodation = document.getElementById('editAccommodation').value;
+    location.clothing = document.getElementById('editClothing').value;
+    location.note = document.getElementById('editNote').value;
     location.lat = parseFloat(document.getElementById('editLat').value) || null;
     location.lng = parseFloat(document.getElementById('editLng').value) || null;
     
@@ -277,6 +305,8 @@ function addNewLocation() {
         activities: "",
         meals: "",
         accommodation: "",
+        clothing: "",
+        note: "",
         lat: null,
         lng: null,
         distance: 0,
@@ -291,120 +321,115 @@ function addNewLocation() {
     openEditModal(newLocation, dayData.locations.length - 1);
 }
 
-// Initialize map
-function initMap() {
-    // Create map centered on Ha Giang
-    map = L.map('map').setView([22.8230, 104.9784], 9);
-    
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19
-    }).addTo(map);
-    
-    // Remove placeholder
-    const placeholder = document.querySelector('.map-placeholder');
-    if (placeholder) {
-        placeholder.remove();
-    }
-}
-
-// Update map with current day locations
+// Update map with current day locations using Google Maps
 function updateMap() {
-    if (!map) return;
-    
-    // Clear existing markers and route
-    markers.forEach(marker => map.removeLayer(marker));
-    markers = [];
-    
-    if (routePolyline) {
-        map.removeLayer(routePolyline);
-        routePolyline = null;
-    }
-    
     const dayData = currentData.days[currentDay - 1];
     const validLocations = dayData.locations.filter(loc => loc.lat && loc.lng);
     
-    if (validLocations.length === 0) return;
+    const mapIframe = document.getElementById('map');
     
-    // Add markers for each location
-    validLocations.forEach((location, index) => {
-        const marker = L.marker([location.lat, location.lng]).addTo(map);
-        
-        // Create popup content
-        const popupContent = `
-            <div style="min-width: 200px;">
-                <h3 style="margin: 0 0 8px 0; font-size: 1.1rem; font-weight: 700;">${location.id}. ${location.name}</h3>
-                ${location.time ? `<p style="margin: 4px 0; font-size: 0.9rem;">⏰ ${location.time}</p>` : ''}
-                ${location.activities ? `<p style="margin: 4px 0; font-size: 0.9rem;">📍 ${location.activities}</p>` : ''}
-            </div>
-        `;
-        
-        marker.bindPopup(popupContent);
-        markers.push(marker);
-    });
-    
-    // Fit map to show all markers
-    if (validLocations.length > 0) {
-        const bounds = L.latLngBounds(validLocations.map(loc => [loc.lat, loc.lng]));
-        map.fitBounds(bounds, { padding: [50, 50] });
-    }
-    
-    // Show route if enabled
-    if (showingRoute) {
-        showRoute();
-    }
-}
-
-// Show route between locations
-function showRoute() {
-    if (!map) return;
-    
-    const dayData = currentData.days[currentDay - 1];
-    const validLocations = dayData.locations.filter(loc => loc.lat && loc.lng);
-    
-    if (validLocations.length < 2) {
-        alert('Cần ít nhất 2 địa điểm có tọa độ để hiển thị tuyến đường');
+    if (validLocations.length === 0) {
+        // Show default Ha Giang location on Google Maps
+        const defaultUrl = `https://www.google.com/maps?q=22.8230,104.9784&hl=vi&z=10&output=embed`;
+        mapIframe.src = defaultUrl;
         return;
     }
     
-    // Remove existing route
-    if (routePolyline) {
-        map.removeLayer(routePolyline);
+    if (showingRoute && validLocations.length > 1) {
+        // Show directions with waypoints
+        const origin = `${validLocations[0].lat},${validLocations[0].lng}`;
+        const destination = `${validLocations[validLocations.length - 1].lat},${validLocations[validLocations.length - 1].lng}`;
+        
+        // Build waypoints for middle locations
+        let waypointsParam = '';
+        if (validLocations.length > 2) {
+            const waypoints = validLocations.slice(1, -1)
+                .map(loc => `${loc.lat},${loc.lng}`)
+                .join('|');
+            waypointsParam = `&waypoints=${waypoints}`;
+        }
+        
+        // Google Maps Directions URL with embed
+        const directionsUrl = `https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=${origin}&destination=${destination}${waypointsParam}&mode=driving&language=vi`;
+        
+        mapIframe.src = directionsUrl;
+    } else {
+        // For multiple markers, create a search query with all locations
+        if (validLocations.length === 1) {
+            // Single location - simple marker
+            const loc = validLocations[0];
+            const mapUrl = `https://www.google.com/maps?q=${loc.lat},${loc.lng}&hl=vi&z=13&output=embed`;
+            mapIframe.src = mapUrl;
+        } else {
+            // Multiple locations - use search with place names to show multiple markers
+            const locationNames = validLocations
+                .map(loc => `${loc.name}, Ha Giang`)
+                .join('|');
+            
+            // Calculate center point
+            const centerLat = validLocations.reduce((sum, loc) => sum + loc.lat, 0) / validLocations.length;
+            const centerLng = validLocations.reduce((sum, loc) => sum + loc.lng, 0) / validLocations.length;
+            
+            // Build URL with all coordinates as search query
+            const coordinates = validLocations
+                .map((loc, idx) => `${loc.lat},${loc.lng}`)
+                .join('+to:');
+            
+            // Use Google Maps search mode which shows multiple pins
+            const searchUrl = `https://www.google.com/maps/embed/v1/search?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=Ha+Giang+attractions&center=${centerLat},${centerLng}&zoom=10&language=vi`;
+            
+            // Alternative: Use simple embed with center
+            const mapUrl = `https://www.google.com/maps?q=${centerLat},${centerLng}&hl=vi&z=10&output=embed`;
+            
+            mapIframe.src = mapUrl;
+            
+            // Show info message
+            console.log('Hiển thị bản đồ với', validLocations.length, 'địa điểm');
+        }
     }
-    
-    // Create route polyline
-    const routeCoords = validLocations.map(loc => [loc.lat, loc.lng]);
-    routePolyline = L.polyline(routeCoords, {
-        color: '#3b82f6',
-        weight: 4,
-        opacity: 0.7,
-        smoothFactor: 1
-    }).addTo(map);
-    
-    showingRoute = true;
-    document.getElementById('showRouteBtn').textContent = 'Ẩn tuyến đường';
-}
-
-// Hide route
-function hideRoute() {
-    if (routePolyline) {
-        map.removeLayer(routePolyline);
-        routePolyline = null;
-    }
-    showingRoute = false;
-    document.getElementById('showRouteBtn').textContent = 'Hiện tuyến đường';
 }
 
 // Toggle route visibility
 function toggleRoute() {
-    if (showingRoute) {
-        hideRoute();
+    showingRoute = !showingRoute;
+    document.getElementById('showRouteBtn').textContent = showingRoute ? 'Ẩn tuyến đường' : 'Hiện tuyến đường';
+    updateMap();
+}
+
+// Open current day locations in Google Maps app/website
+function openInGoogleMaps() {
+    const dayData = currentData.days[currentDay - 1];
+    const validLocations = dayData.locations.filter(loc => loc.lat && loc.lng);
+    
+    if (validLocations.length === 0) {
+        alert('Chưa có địa điểm nào có tọa độ để hiển thị');
+        return;
+    }
+    
+    if (validLocations.length === 1) {
+        // Single location - open in Google Maps
+        const loc = validLocations[0];
+        const url = `https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`;
+        window.open(url, '_blank');
     } else {
-        showRoute();
+        // Multiple locations - open directions
+        const origin = `${validLocations[0].lat},${validLocations[0].lng}`;
+        const destination = `${validLocations[validLocations.length - 1].lat},${validLocations[validLocations.length - 1].lng}`;
+        
+        // Build waypoints
+        let waypointsParam = '';
+        if (validLocations.length > 2) {
+            const waypoints = validLocations.slice(1, -1)
+                .map(loc => `${loc.lat},${loc.lng}`)
+                .join('|');
+            waypointsParam = `&waypoints=${waypointsParam}`;
+        }
+        
+        // Open Google Maps directions
+        const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}${waypointsParam}&travelmode=driving`;
+        window.open(url, '_blank');
     }
 }
 
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', init);
-

@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lịch trình Hà Giang 2025</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
     <div class="container">
@@ -46,18 +44,30 @@
                             </svg>
                             Bản đồ hành trình
                         </h2>
-                        <p class="map-subtitle">Xem vị trí các điểm đến trong chuyến đi</p>
+                        <p class="map-subtitle">Xem vị trí các điểm đến trong chuyến đi - Google Maps</p>
                     </div>
-                    <button class="btn-route" id="showRouteBtn">Hiện tuyến đường</button>
+                    <div class="map-actions">
+                        <button class="btn-route" id="showRouteBtn">Hiện tuyến đường</button>
+                        <button class="btn-open-maps" id="openMapsBtn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                <polyline points="15 3 21 3 21 9"/>
+                                <line x1="10" y1="14" x2="21" y2="3"/>
+                            </svg>
+                            Mở Google Maps
+                        </button>
+                    </div>
                 </div>
-                <div class="map-container" id="map">
-                    <div class="map-placeholder">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                            <circle cx="12" cy="10" r="3"/>
-                        </svg>
-                        <p>Bản đồ sẽ hiển thị các điểm đến trong hành trình</p>
-                    </div>
+                <div class="map-container">
+                    <iframe 
+                        id="map" 
+                        width="100%" 
+                        height="100%" 
+                        style="border:0; border-radius: 12px;" 
+                        loading="lazy" 
+                        allowfullscreen
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
                 </div>
             </div>
 
@@ -164,6 +174,14 @@
                     <div class="form-group">
                         <label>Chỗ nghỉ</label>
                         <input type="text" id="editAccommodation">
+                    </div>
+                    <div class="form-group">
+                        <label>Trang phục</label>
+                        <textarea id="editClothing" rows="2" placeholder="VD: Áo thun + Quần jeans, Áo khoác ấm, Giày thể thao..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Ghi chú</label>
+                        <textarea id="editNote" rows="2" placeholder="Thêm ghi chú cho địa điểm này..."></textarea>
                     </div>
                     <div class="form-row">
                         <div class="form-group">

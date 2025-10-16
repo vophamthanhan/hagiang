@@ -128,6 +128,7 @@ body {
     border-radius: 16px;
     padding: 24px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
 }
 
 .map-header {
@@ -136,6 +137,13 @@ body {
     align-items: flex-start;
     margin-bottom: 20px;
     gap: 20px;
+    flex-wrap: wrap;
+}
+
+.map-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .map-title {
@@ -153,16 +161,26 @@ body {
     color: #6b7280;
 }
 
-.btn-route {
+.btn-route,
+.btn-open-maps {
     background: #10b981;
     color: white;
     border: none;
     padding: 10px 20px;
     border-radius: 8px;
     font-size: 0.9rem;
+    font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
     transition: all 0.3s ease;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-open-maps {
+    background: #3b82f6;
 }
 
 .btn-route:hover {
@@ -171,17 +189,45 @@ body {
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
 
+.btn-open-maps:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+@media (max-width: 768px) {
+    .map-header {
+        flex-direction: column;
+        align-items: stretch;
+        margin-bottom: 20px;
+    }
+    
+    .map-actions {
+        flex-direction: column;
+    }
+    
+    .btn-route,
+    .btn-open-maps {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
 .map-container {
     height: 500px;
+    width: 100%;
+    max-width: 100%;
     background: #f3f4f6;
     border-radius: 12px;
     overflow: hidden;
     position: relative;
+    box-sizing: border-box;
 }
 
 #map {
     width: 100%;
     height: 100%;
+    border: 0;
     border-radius: 12px;
 }
 
@@ -398,6 +444,26 @@ body {
     font-size: 1rem;
     font-weight: 700;
     color: #3b82f6;
+}
+
+/* Clothing detail styling */
+.clothing-detail {
+    background: #e0f2fe;
+    padding: 8px;
+    border-radius: 6px;
+    border-left: 3px solid #0284c7;
+    margin-top: 4px;
+}
+
+.clothing-detail strong {
+    color: #0c4a6e;
+}
+
+.location-note {
+    background: #fef3c7;
+    padding: 8px;
+    border-radius: 6px;
+    margin-top: 4px;
 }
 
 /* Instructions */
