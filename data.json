@@ -180,14 +180,14 @@
         {
           "id": 5,
           "name": "Mã Pí Lèng",
-          "time": "15:00",
+          "time": "12:00",
           "activities": "Ngắm cảnh hẻm Tu Sản, sông Nho Quế",
           "meals": "",
           "accommodation": "",
           "lat": 23.225789,
           "lng": 105.2037602,
           "note": "Được mệnh danh là một trong Tứ Đại Đỉnh Đèo.",
-          "clothing": [],
+          "clothing": null,
           "distance": null,
           "duration": null
         },
