@@ -259,7 +259,7 @@
       "locations": [
         {
           "id": 1,
-          "name": "Homestay Đồng Văn (cần tìm cụ thể)",
+          "name": "Homestay Đồng Văn ",
           "time": "07:00",
           "activities": "Ăn sáng, trả phòng",
           "meals": "Sáng",
@@ -267,7 +267,7 @@
           "lat": null,
           "lng": null,
           "note": "Thưởng thức không khí buổi sáng ở Đồng Văn.",
-          "clothing": [],
+          "clothing": null,
           "distance": null,
           "duration": null
         },
