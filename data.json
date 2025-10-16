@@ -109,15 +109,15 @@
       "locations": [
         {
           "id": 1,
-          "name": "Homestay Lô Lô Time",
+          "name": "Homestay ở Lô Lô Chải",
           "time": "07:00",
           "activities": "Ăn sáng, trả phòng",
-          "meals": "Sáng",
+          "meals": "",
           "accommodation": "",
           "lat": 23.333333,
           "lng": 105.333333,
-          "note": "Thưởng thức không khí buổi sáng ở Lô Lô Chải.",
-          "clothing": [],
+          "note": "",
+          "clothing": null,
           "distance": null,
           "duration": null
         },
