@@ -207,15 +207,15 @@
         },
         {
           "id": 7,
-          "name": "Địa điểm mới",
-          "time": "",
+          "name": "Lang thang Phố cổ",
+          "time": "19:00",
           "activities": "",
           "meals": "",
           "accommodation": "",
           "clothing": null,
           "note": "",
-          "lat": null,
-          "lng": null,
+          "lat": 23.2782612,
+          "lng": 105.3588031,
           "distance": 0,
           "duration": 0
         }
