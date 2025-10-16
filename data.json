@@ -152,14 +152,14 @@
         {
           "id": 4,
           "name": "Đồng Văn",
-          "time": "11:00",
+          "time": "10:30",
           "activities": "Ăn trưa tại Đồng Văn",
           "meals": "Trưa",
           "accommodation": "",
           "lat": null,
           "lng": null,
           "note": "Thưởng thức ẩm thực địa phương.",
-          "clothing": [],
+          "clothing": null,
           "distance": null,
           "duration": null
         },
