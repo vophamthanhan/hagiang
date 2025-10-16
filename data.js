@@ -106,6 +106,20 @@ const defaultData = {
           "lng": null,
           "distance": 0,
           "duration": 0
+        },
+        {
+          "id": 9,
+          "name": "Địa điểm mới",
+          "time": "",
+          "activities": "",
+          "meals": "",
+          "accommodation": "",
+          "clothing": null,
+          "note": "",
+          "lat": null,
+          "lng": null,
+          "distance": 0,
+          "duration": 0
         }
       ]
     },
