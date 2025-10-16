@@ -196,8 +196,8 @@ function viewAllDays() {
     // Render table
     renderTableView();
     
-    // Update summary
-    updateSummary();
+    // Update summary - calculate for all days
+    updateSummary(null);
     
     // Update map with all locations
     updateMapAllDays();
@@ -265,8 +265,8 @@ function renderDay(day) {
     // Render locations
     renderLocations(dayData.locations);
     
-    // Update summary - now calculates for all days
-    updateSummary();
+    // Update summary - calculate only for this specific day
+    updateSummary(day - 1);
     
     // Update map
     updateMap();
@@ -535,17 +535,30 @@ function createLocationElement(location, index, dayIndex = null) {
     return div;
 }
 
-// Update summary - calculate totals for ALL days
-function updateSummary() {
-    // Calculate totals across all days
-    const total = currentData.days.reduce((acc, day) => {
-        day.locations.forEach(loc => {
+// Update summary - calculate totals based on current view
+function updateSummary(dayIndex = null) {
+    let total;
+    
+    // If dayIndex is provided, calculate only for that day
+    if (dayIndex !== null && currentData.days[dayIndex]) {
+        const dayData = currentData.days[dayIndex];
+        total = dayData.locations.reduce((acc, loc) => {
             acc.distance += (loc.distance || 0);
             acc.duration += (loc.duration || 0);
             acc.stops += 1;
-        });
-        return acc;
-    }, { distance: 0, duration: 0, stops: 0 });
+            return acc;
+        }, { distance: 0, duration: 0, stops: 0 });
+    } else {
+        // Calculate totals across all days
+        total = currentData.days.reduce((acc, day) => {
+            day.locations.forEach(loc => {
+                acc.distance += (loc.distance || 0);
+                acc.duration += (loc.duration || 0);
+                acc.stops += 1;
+            });
+            return acc;
+        }, { distance: 0, duration: 0, stops: 0 });
+    }
     
     totalDistance.textContent = `${total.distance.toFixed(1)} km`;
     
