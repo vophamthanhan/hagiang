@@ -88,6 +88,20 @@
         },
         {
           "id": 6,
+          "name": "Dốc Chín Khoanh",
+          "time": "17:15",
+          "activities": "",
+          "meals": "",
+          "accommodation": "",
+          "clothing": null,
+          "note": "",
+          "lat": 23.20984,
+          "lng": 105.1924693,
+          "distance": 0,
+          "duration": 0
+        },
+        {
+          "id": 7,
           "name": "Homestay Lô Lô Time",
           "time": "18:00",
           "activities": "Nhận phòng, ăn tối",
@@ -99,20 +113,6 @@
           "clothing": null,
           "distance": null,
           "duration": null
-        },
-        {
-          "id": 7,
-          "name": "Địa điểm mới",
-          "time": "",
-          "activities": "",
-          "meals": "",
-          "accommodation": "",
-          "clothing": null,
-          "note": "",
-          "lat": null,
-          "lng": null,
-          "distance": 0,
-          "duration": 0
         }
       ]
     },
