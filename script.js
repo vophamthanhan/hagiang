@@ -26,14 +26,19 @@ const tokenInput = document.getElementById('tokenInput');
 const toggleTokenBtn = document.getElementById('toggleTokenBtn');
 const clearTokenBtn = document.getElementById('clearTokenBtn');
 const tokenStatus = document.getElementById('tokenStatus');
-const mapsIframeInput = document.getElementById('mapsIframe');
-const extractBtn = document.getElementById('extractBtn');
+const mapSearchInput = document.getElementById('mapSearchInput');
+const selectLocationBtn = document.getElementById('selectLocationBtn');
+const searchResults = document.getElementById('searchResults');
 const extractStatus = document.getElementById('extractStatus');
 const listViewBtn = document.getElementById('listViewBtn');
 const gridViewBtn = document.getElementById('gridViewBtn');
 const viewAllBtn = document.getElementById('viewAllBtn');
 const tableViewContainer = document.getElementById('tableViewContainer');
 const itineraryTable = document.getElementById('itineraryTable');
+
+// Google Maps search state
+let selectedPlace = null;
+let searchTimeout = null;
 
 // Initialize app
 async function init() {
@@ -110,8 +115,9 @@ function attachEventListeners() {
         generateClothingTable(numPeople);
     });
     
-    // Extract coordinates from Google Maps link
-    extractBtn.addEventListener('click', extractCoordinatesFromLink);
+    // Google Maps search
+    mapSearchInput.addEventListener('input', handleSearchInput);
+    selectLocationBtn.addEventListener('click', selectPlace);
     
     // View toggle buttons
     listViewBtn.addEventListener('click', () => switchView('list'));
@@ -589,10 +595,14 @@ function openEditModal(location, index) {
     // Load clothing data
     loadClothingData(location.clothing);
     
-    // Clear previous inputs
-    document.getElementById('mapsIframe').value = '';
-    document.getElementById('extractStatus').textContent = '';
-    document.getElementById('extractStatus').className = 'extract-status';
+    // Clear previous search
+    mapSearchInput.value = '';
+    searchResults.style.display = 'none';
+    searchResults.innerHTML = '';
+    selectLocationBtn.style.display = 'none';
+    selectedPlace = null;
+    extractStatus.textContent = '';
+    extractStatus.className = 'extract-status';
     
     editModal.classList.add('active');
 }
@@ -892,76 +902,131 @@ function deleteLocation(index) {
 }
 
 // ============================================
-// GOOGLE MAPS IFRAME EXTRACTION
+// GOOGLE MAPS SEARCH & GEOCODING
 // ============================================
 
-async function extractCoordinatesFromLink() {
-    const iframeCode = mapsIframeInput.value.trim();
+// Handle search input with debouncing
+function handleSearchInput(e) {
+    const query = e.target.value.trim();
     
-    if (!iframeCode) {
-        showExtractStatus('⚠️ Vui lòng nhập mã iframe từ Google Maps', 'error');
+    // Clear previous timeout
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+    
+    // Hide button and clear selected place
+    selectLocationBtn.style.display = 'none';
+    selectedPlace = null;
+    
+    if (query.length < 3) {
+        searchResults.style.display = 'none';
+        searchResults.innerHTML = '';
         return;
     }
     
+    // Show loading
+    searchResults.style.display = 'block';
+    searchResults.innerHTML = '<div class="search-loading">🔄 Đang tìm kiếm...</div>';
+    
+    // Debounce search
+    searchTimeout = setTimeout(() => {
+        searchPlaces(query);
+    }, 500);
+}
+
+// Search places using Nominatim (OpenStreetMap)
+async function searchPlaces(query) {
     try {
-        showExtractStatus('🔄 Đang xử lý...', 'info');
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`,
+            {
+                headers: {
+                    'User-Agent': 'HaGiangTravelPlanner/1.0'
+                }
+            }
+        );
         
-        // Extract src URL from iframe
-        const srcMatch = iframeCode.match(/src=["']([^"']+)["']/i);
-        if (!srcMatch) {
-            showExtractStatus('❌ Không tìm thấy URL trong iframe. Hãy đảm bảo paste đúng mã iframe.', 'error');
-            return;
+        if (!response.ok) {
+            throw new Error('Lỗi khi tìm kiếm địa điểm');
         }
         
-        const embedUrl = srcMatch[1];
-        console.log('Extracted embed URL:', embedUrl);
-        
-        // Extract coordinates from pb parameter in embed URL
-        // Format: !1d<lng>!2d<lat> or !3d<lat>!4d<lng>
-        const pbPattern = /!2d(-?\d+\.\d+)!3d(-?\d+\.\d+)/; // lng, lat
-        const pbPattern2 = /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/; // lat, lng
-        
-        let match = embedUrl.match(pbPattern);
-        if (match) {
-            const lng = parseFloat(match[1]);
-            const lat = parseFloat(match[2]);
-            updateCoordinatesAndMap(lat, lng);
-            return;
-        }
-        
-        match = embedUrl.match(pbPattern2);
-        if (match) {
-            const lat = parseFloat(match[1]);
-            const lng = parseFloat(match[2]);
-            updateCoordinatesAndMap(lat, lng);
-            return;
-        }
-        
-        // Try center parameter
-        const centerPattern = /center=(-?\d+\.\d+)%2C(-?\d+\.\d+)/;
-        match = embedUrl.match(centerPattern);
-        if (match) {
-            const lat = parseFloat(match[1]);
-            const lng = parseFloat(match[2]);
-            updateCoordinatesAndMap(lat, lng);
-            return;
-        }
-        
-        // Try q parameter
-        const qPattern = /[?&]q=(-?\d+\.\d+)%2C(-?\d+\.\d+)/;
-        match = embedUrl.match(qPattern);
-        if (match) {
-            const lat = parseFloat(match[1]);
-            const lng = parseFloat(match[2]);
-            updateCoordinatesAndMap(lat, lng);
-            return;
-        }
-        
-        showExtractStatus('❌ Không tìm thấy tọa độ trong iframe. Hãy thử share lại từ Google Maps và chọn "Embed a map".', 'error');
+        const results = await response.json();
+        displaySearchResults(results);
         
     } catch (error) {
-        console.error('Error extracting coordinates:', error);
-        showExtractStatus('❌ Lỗi khi xử lý iframe: ' + error.message, 'error');
+        console.error('Search error:', error);
+        searchResults.innerHTML = '<div class="search-no-results">❌ Lỗi khi tìm kiếm. Vui lòng thử lại.</div>';
+    }
+}
+
+// Display search results
+function displaySearchResults(results) {
+    if (results.length === 0) {
+        searchResults.innerHTML = '<div class="search-no-results">Không tìm thấy kết quả. Thử tìm kiếm khác.</div>';
+        return;
+    }
+    
+    searchResults.innerHTML = '';
+    
+    results.forEach((place, index) => {
+        const item = document.createElement('div');
+        item.className = 'search-result-item';
+        item.dataset.index = index;
+        
+        const name = place.display_name.split(',')[0];
+        const address = place.display_name;
+        
+        item.innerHTML = `
+            <div class="search-result-name">${name}</div>
+            <div class="search-result-address">${address}</div>
+        `;
+        
+        item.addEventListener('click', () => {
+            selectSearchResult(place, item);
+        });
+        
+        searchResults.appendChild(item);
+    });
+}
+
+// Select a search result
+function selectSearchResult(place, element) {
+    // Remove previous selection
+    document.querySelectorAll('.search-result-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    
+    // Mark as selected
+    element.classList.add('selected');
+    selectedPlace = place;
+    
+    // Show select button
+    selectLocationBtn.style.display = 'block';
+    
+    // Update status
+    showExtractStatus(`✅ Đã chọn: ${place.display_name.split(',')[0]}`, 'success');
+}
+
+// Select the place and update coordinates
+function selectPlace() {
+    if (!selectedPlace) {
+        showExtractStatus('⚠️ Vui lòng chọn một địa điểm từ danh sách', 'error');
+        return;
+    }
+    
+    const lat = parseFloat(selectedPlace.lat);
+    const lng = parseFloat(selectedPlace.lon);
+    
+    updateCoordinatesAndMap(lat, lng);
+    
+    // Hide search results
+    searchResults.style.display = 'none';
+    selectLocationBtn.style.display = 'none';
+    
+    // Update location name if empty
+    const nameInput = document.getElementById('editName');
+    if (!nameInput.value || nameInput.value === 'Địa điểm mới') {
+        nameInput.value = selectedPlace.display_name.split(',')[0];
     }
 }
 

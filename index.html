@@ -246,17 +246,18 @@
                         <textarea id="editNote" rows="2" placeholder="Thêm ghi chú cho địa điểm này..."></textarea>
                     </div>
                     <div class="form-group">
-                        <label>📍 Google Maps Embed Code (Iframe)</label>
-                        <textarea id="mapsIframe" rows="3" placeholder='Paste mã iframe từ Google Maps (Share > Embed a map):&#10;&#10;<iframe src="https://www.google.com/maps/embed?pb=..." width="600" height="450" ...></iframe>' autocomplete="off"></textarea>
+                        <label>📍 Tìm kiếm địa điểm trên Google Maps</label>
+                        <input type="text" id="mapSearchInput" placeholder="Nhập tên địa điểm (ví dụ: Hà Nội, Việt Nam)" autocomplete="off">
                         <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
-                            💡 Mở Google Maps → Chia sẻ → <strong>Nhúng bản đồ</strong> → Sao chép HTML
+                            💡 Nhập tên địa điểm, chọn từ danh sách gợi ý, sau đó nhấn "Chọn địa điểm"
                         </small>
-                        <button type="button" class="btn-extract" id="extractBtn">
+                        <div id="searchResults" class="search-results" style="display: none;"></div>
+                        <button type="button" class="btn-extract" id="selectLocationBtn" style="display: none;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                                 <circle cx="12" cy="10" r="3"/>
                             </svg>
-                            Lấy tọa độ từ Iframe
+                            Chọn địa điểm này
                         </button>
                         <div id="extractStatus" class="extract-status"></div>
                     </div>
