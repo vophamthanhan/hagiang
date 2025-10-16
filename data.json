@@ -53,8 +53,8 @@
           "accommodation": "",
           "lat": 22.727778,
           "lng": 105,
-          "note": "Chuẩn bị cho hành trình tiếp theo.",
-          "clothing": [],
+          "note": "",
+          "clothing": null,
           "distance": null,
           "duration": null
         },
