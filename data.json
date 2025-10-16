@@ -116,6 +116,20 @@
         },
         {
           "id": 8,
+          "name": "Dinh Vua Mèo",
+          "time": "14:00",
+          "activities": "",
+          "meals": "",
+          "accommodation": "",
+          "clothing": null,
+          "note": "",
+          "lat": 23.26207784419884,
+          "lng": 105.25045675907258,
+          "distance": 0,
+          "duration": 0
+        },
+        {
+          "id": 9,
           "name": "Homestay ở Lô Lô Chải",
           "time": "18:00",
           "activities": "Nhận phòng, ăn tối",
@@ -127,20 +141,6 @@
           "clothing": null,
           "distance": null,
           "duration": null
-        },
-        {
-          "id": 9,
-          "name": "Địa điểm mới",
-          "time": "",
-          "activities": "",
-          "meals": "",
-          "accommodation": "",
-          "clothing": null,
-          "note": "",
-          "lat": null,
-          "lng": null,
-          "distance": 0,
-          "duration": 0
         }
       ]
     },
