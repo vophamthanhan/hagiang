@@ -274,6 +274,14 @@ body {
     margin-bottom: 24px;
 }
 
+.itinerary-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
 .itinerary-title {
     font-size: 1.25rem;
     font-weight: 700;
@@ -289,12 +297,58 @@ body {
     color: #6b7280;
 }
 
+/* View Toggle */
+.view-toggle {
+    display: flex;
+    gap: 8px;
+    background: #f3f4f6;
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.view-btn:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.view-btn.active {
+    background: white;
+    color: #3b82f6;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.view-btn svg {
+    stroke-width: 2;
+}
+
 /* Location List */
 .location-list {
     display: flex;
     flex-direction: column;
     gap: 16px;
     margin-bottom: 20px;
+}
+
+/* Grid View */
+.location-list.grid-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
 }
 
 .location-item {

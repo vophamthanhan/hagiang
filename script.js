@@ -29,6 +29,8 @@ const tokenStatus = document.getElementById('tokenStatus');
 const mapsLinkInput = document.getElementById('mapsLink');
 const extractBtn = document.getElementById('extractBtn');
 const extractStatus = document.getElementById('extractStatus');
+const listViewBtn = document.getElementById('listViewBtn');
+const gridViewBtn = document.getElementById('gridViewBtn');
 
 // Initialize app
 async function init() {
@@ -40,6 +42,10 @@ async function init() {
     if (githubData) {
         currentData = githubData;
     }
+    
+    // Load saved view mode
+    const savedViewMode = localStorage.getItem('viewMode') || 'list';
+    switchView(savedViewMode);
     
     updateMap();
     renderDay(currentDay);
@@ -94,6 +100,10 @@ function attachEventListeners() {
     // Extract coordinates from Google Maps link
     extractBtn.addEventListener('click', extractCoordinatesFromLink);
     
+    // View toggle buttons
+    listViewBtn.addEventListener('click', () => switchView('list'));
+    gridViewBtn.addEventListener('click', () => switchView('grid'));
+    
     // Settings button
     settingsBtn.addEventListener('click', openSettingsModal);
     closeSettingsModal.addEventListener('click', closeSettings);
@@ -138,6 +148,23 @@ function switchDay(day) {
     });
 
     renderDay(day);
+}
+
+// Switch view mode (list/grid)
+function switchView(viewMode) {
+    const locationList = document.getElementById('locationList');
+    
+    if (viewMode === 'list') {
+        locationList.classList.remove('grid-view');
+        listViewBtn.classList.add('active');
+        gridViewBtn.classList.remove('active');
+        localStorage.setItem('viewMode', 'list');
+    } else if (viewMode === 'grid') {
+        locationList.classList.add('grid-view');
+        gridViewBtn.classList.add('active');
+        listViewBtn.classList.remove('active');
+        localStorage.setItem('viewMode', 'grid');
+    }
 }
 
 // Render a specific day
