@@ -270,20 +270,6 @@
         },
         {
           "id": 4,
-          "name": "Giang Son Hostel And Motorbike For Rent",
-          "time": "14:00",
-          "activities": "",
-          "meals": "",
-          "accommodation": "",
-          "lat": 23.2351495,
-          "lng": 105.3746892,
-          "note": "Chuẩn bị cho chuyến về.",
-          "clothing": null,
-          "distance": null,
-          "duration": null
-        },
-        {
-          "id": 5,
           "name": "TP. Hà Giang",
           "time": "19:00",
           "activities": "Nghỉ đêm tại khách sạn/homestay",
