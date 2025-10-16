@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lịch trình Hà Giang 2025</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Google Maps JavaScript API with Places library -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&libraries=places&language=vi"></script>
 </head>
 <body>
     <div class="container">
@@ -226,21 +228,20 @@
                         <textarea id="editNote" rows="2" placeholder="Thêm ghi chú cho địa điểm này..."></textarea>
                     </div>
                     <div class="form-group">
-                        <label>📍 Google Maps Link (Paste link chia sẻ)</label>
-                        <div class="maps-link-input">
-                            <input type="text" id="mapsLink" placeholder="VD: https://maps.app.goo.gl/abc123 hoặc https://www.google.com/maps?q=22.5,104.9">
-                            <button type="button" class="btn-extract" id="extractBtn">Lấy tọa độ</button>
-                        </div>
-                        <div id="extractStatus" class="extract-status"></div>
+                        <label>📍 Tìm kiếm địa điểm trên Google Maps</label>
+                        <input type="text" id="placeSearch" placeholder="Gõ tên địa điểm và chọn từ danh sách gợi ý..." autocomplete="off">
+                        <small style="color: #666; display: block; margin-top: 5px; font-size: 12px;">
+                            💡 Ví dụ: Cột cờ Lũng Cú, Mã Pí Lèng, TP Hà Giang...
+                        </small>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Vĩ độ (Latitude)</label>
-                            <input type="number" step="any" id="editLat" placeholder="Tự động điền từ link">
+                            <input type="number" step="any" id="editLat" placeholder="Tự động điền khi chọn địa điểm" readonly>
                         </div>
                         <div class="form-group">
                             <label>Kinh độ (Longitude)</label>
-                            <input type="number" step="any" id="editLng" placeholder="Tự động điền từ link">
+                            <input type="number" step="any" id="editLng" placeholder="Tự động điền khi chọn địa điểm" readonly>
                         </div>
                     </div>
                     <div class="form-actions">

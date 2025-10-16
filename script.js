@@ -26,9 +26,7 @@ const tokenInput = document.getElementById('tokenInput');
 const toggleTokenBtn = document.getElementById('toggleTokenBtn');
 const clearTokenBtn = document.getElementById('clearTokenBtn');
 const tokenStatus = document.getElementById('tokenStatus');
-const mapsLinkInput = document.getElementById('mapsLink');
-const extractBtn = document.getElementById('extractBtn');
-const extractStatus = document.getElementById('extractStatus');
+const placeSearchInput = document.getElementById('placeSearch');
 const listViewBtn = document.getElementById('listViewBtn');
 const gridViewBtn = document.getElementById('gridViewBtn');
 
@@ -102,9 +100,6 @@ function attachEventListeners() {
         const numPeople = parseInt(document.getElementById('numPeople').value) || 1;
         generateClothingTable(numPeople);
     });
-    
-    // Extract coordinates from Google Maps link
-    extractBtn.addEventListener('click', extractCoordinatesFromLink);
     
     // View toggle buttons
     listViewBtn.addEventListener('click', () => switchView('list'));
@@ -424,6 +419,11 @@ function openEditModal(location, index) {
     loadClothingData(location.clothing);
     
     editModal.classList.add('active');
+    
+    // Initialize Google Places Autocomplete after modal is open
+    setTimeout(() => {
+        initAutocomplete();
+    }, 100);
 }
 
 // Load clothing data into table
@@ -724,96 +724,97 @@ function deleteLocation(index) {
 // GOOGLE MAPS LINK EXTRACTION
 // ============================================
 
-// Helper function to update coordinates and map
-function updateCoordinatesAndMap(lat, lng) {
-    document.getElementById('editLat').value = lat;
-    document.getElementById('editLng').value = lng;
-    
-    // Auto update location object and refresh map
-    if (editingLocation !== null) {
-        const dayData = currentData.days[currentDay - 1];
-        const location = dayData.locations[editingLocation];
-        location.lat = lat;
-        location.lng = lng;
-        updateMap(); // Refresh map with new coordinates
-    }
-    
-    showExtractStatus(`✅ Đã lấy tọa độ: ${lat.toFixed(6)}, ${lng.toFixed(6)}`, 'success');
-}
+// ============================================
+// GOOGLE PLACES AUTOCOMPLETE
+// ============================================
 
-async function extractCoordinatesFromLink() {
-    const link = mapsLinkInput.value.trim();
+let autocomplete;
+let placeSelectedManually = false;
+
+function initAutocomplete() {
+    const searchInput = document.getElementById('placeSearch');
     
-    if (!link) {
-        showExtractStatus('⚠️ Vui lòng nhập link Google Maps', 'error');
+    if (!searchInput || !google || !google.maps || !google.maps.places) {
+        console.error('Google Places API not loaded');
         return;
     }
     
-    try {
-        showExtractStatus('🔄 Đang xử lý...', 'info');
+    // Initialize Autocomplete with Vietnam bias
+    autocomplete = new google.maps.places.Autocomplete(searchInput, {
+        componentRestrictions: { country: 'vn' },
+        fields: ['place_id', 'geometry', 'name', 'formatted_address']
+    });
+    
+    // Listen for place selection
+    autocomplete.addListener('place_changed', function() {
+        placeSelectedManually = true;
+        const place = autocomplete.getPlace();
         
-        // Pattern 1: Direct coordinates in URL (e.g., ?q=lat,lng or @lat,lng)
-        const coordPattern1 = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
-        const coordPattern2 = /q=(-?\d+\.\d+),(-?\d+\.\d+)/;
-        const coordPattern3 = /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/;
-        
-        let match = link.match(coordPattern1) || link.match(coordPattern2);
-        
-        if (match) {
-            const lat = parseFloat(match[1]);
-            const lng = parseFloat(match[2]);
-            updateCoordinatesAndMap(lat, lng);
+        if (!place.geometry || !place.geometry.location) {
+            showNotification('❌ Không tìm thấy tọa độ cho địa điểm này', 'error');
             return;
         }
         
-        // Pattern 2: Place data with coordinates
-        match = link.match(coordPattern3);
-        if (match) {
-            const lat = parseFloat(match[1]);
-            const lng = parseFloat(match[2]);
-            updateCoordinatesAndMap(lat, lng);
-            return;
+        // Get coordinates
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+        
+        // Fill coordinates into form
+        document.getElementById('editLat').value = lat;
+        document.getElementById('editLng').value = lng;
+        
+        // Update location name if empty or default
+        const nameInput = document.getElementById('editName');
+        if (!nameInput.value || nameInput.value === 'Địa điểm mới') {
+            nameInput.value = place.name;
         }
         
-        // Pattern 3: Short link (goo.gl) - need to follow redirect
-        if (link.includes('maps.app.goo.gl') || link.includes('goo.gl')) {
-            try {
-                const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(link)}`);
-                const html = await response.text();
-                
-                // Try to find coordinates in the redirected HTML
-                const metaMatch = html.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || 
-                                 html.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
-                
-                if (metaMatch) {
-                    const lat = parseFloat(metaMatch[1]);
-                    const lng = parseFloat(metaMatch[2]);
-                    updateCoordinatesAndMap(lat, lng);
-                    return;
-                }
-            } catch (error) {
-                console.error('Error fetching short link:', error);
-            }
+        // Update location object and map in real-time
+        if (editingLocation !== null) {
+            const dayData = currentData.days[currentDay - 1];
+            const location = dayData.locations[editingLocation];
+            location.lat = lat;
+            location.lng = lng;
+            updateMap(); // Refresh map immediately
         }
         
-        showExtractStatus('❌ Không tìm thấy tọa độ trong link này. Hãy thử mở link trên Google Maps và copy link đầy đủ.', 'error');
-        
-    } catch (error) {
-        console.error('Error extracting coordinates:', error);
-        showExtractStatus('❌ Lỗi khi xử lý link: ' + error.message, 'error');
-    }
+        // Show success notification
+        showNotification(`✅ Đã lấy tọa độ: ${place.name}`, 'success');
+    });
 }
 
-function showExtractStatus(message, type) {
-    extractStatus.textContent = message;
-    extractStatus.className = `extract-status ${type}`;
-    
-    if (type === 'success' || type === 'error') {
-        setTimeout(() => {
-            extractStatus.textContent = '';
-            extractStatus.className = 'extract-status';
-        }, 5000);
+// Helper function to show notifications
+function showNotification(message, type) {
+    // Remove existing notifications
+    const existingNotif = document.querySelector('.notification');
+    if (existingNotif) {
+        existingNotif.remove();
     }
+    
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        padding: 15px 25px;
+        background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        font-size: 14px;
+        animation: slideInRight 0.3s ease;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
 }
 
 // ============================================

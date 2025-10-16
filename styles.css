@@ -1047,6 +1047,28 @@ body {
     }
 }
 
+@keyframes slideInRight {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+
 @keyframes fadeOut {
     from {
         opacity: 1;
@@ -1055,3 +1077,4 @@ body {
         opacity: 0;
     }
 }
+
