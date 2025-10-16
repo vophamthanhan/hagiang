@@ -36,6 +36,15 @@
 
         <!-- Day Tabs -->
         <div class="tabs">
+            <button class="tab" data-day="all" id="viewAllBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"/>
+                    <rect x="14" y="3" width="7" height="7"/>
+                    <rect x="3" y="14" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/>
+                </svg>
+                Xem tất cả
+            </button>
             <button class="tab active" data-day="1">Ngày 1 (13/11/2025)</button>
             <button class="tab" data-day="2">Ngày 2 (14/11/2025)</button>
             <button class="tab" data-day="3">Ngày 3 (15/11/2025)</button>
@@ -228,18 +237,18 @@
                         <textarea id="editNote" rows="2" placeholder="Thêm ghi chú cho địa điểm này..."></textarea>
                     </div>
                     <div class="form-group">
-                        <label>📍 Tìm kiếm địa điểm trên Google Maps</label>
-                        <div class="place-search-container">
-                            <input type="text" id="placeSearch" placeholder="Nhập tên địa điểm (VD: Cột cờ Lũng Cú, Mã Pí Lèng...)" autocomplete="off">
-                            <button type="button" class="btn-search-place" id="searchPlaceBtn">
+                        <label>📍 Google Maps Link</label>
+                        <div class="maps-link-input">
+                            <input type="text" id="mapsLink" placeholder="Paste link chia sẻ từ Google Maps (VD: https://maps.app.goo.gl/xxx hoặc https://goo.gl/maps/xxx)" autocomplete="off">
+                            <button type="button" class="btn-extract" id="extractBtn">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="11" cy="11" r="8"/>
-                                    <path d="m21 21-4.35-4.35"/>
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                    <circle cx="12" cy="10" r="3"/>
                                 </svg>
-                                Tìm
+                                Lấy tọa độ
                             </button>
                         </div>
-                        <div id="placeResults" class="place-results"></div>
+                        <div id="extractStatus" class="extract-status"></div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">

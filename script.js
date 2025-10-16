@@ -26,9 +26,12 @@ const tokenInput = document.getElementById('tokenInput');
 const toggleTokenBtn = document.getElementById('toggleTokenBtn');
 const clearTokenBtn = document.getElementById('clearTokenBtn');
 const tokenStatus = document.getElementById('tokenStatus');
-const placeSearchInput = document.getElementById('placeSearch');
+const mapsLinkInput = document.getElementById('mapsLink');
+const extractBtn = document.getElementById('extractBtn');
+const extractStatus = document.getElementById('extractStatus');
 const listViewBtn = document.getElementById('listViewBtn');
 const gridViewBtn = document.getElementById('gridViewBtn');
+const viewAllBtn = document.getElementById('viewAllBtn');
 
 // Initialize app
 async function init() {
@@ -60,8 +63,12 @@ async function init() {
 function attachEventListeners() {
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            const day = parseInt(tab.dataset.day);
-            switchDay(day);
+            const day = tab.dataset.day;
+            if (day === 'all') {
+                viewAllDays();
+            } else {
+                switchDay(parseInt(day));
+            }
         });
     });
 
@@ -101,16 +108,8 @@ function attachEventListeners() {
         generateClothingTable(numPeople);
     });
     
-    // Place search button
-    document.getElementById('searchPlaceBtn').addEventListener('click', searchPlaces);
-    
-    // Allow Enter key to trigger search
-    document.getElementById('placeSearch').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            searchPlaces();
-        }
-    });
+    // Extract coordinates from Google Maps link
+    extractBtn.addEventListener('click', extractCoordinatesFromLink);
     
     // View toggle buttons
     listViewBtn.addEventListener('click', () => switchView('list'));
@@ -177,6 +176,86 @@ function switchView(viewMode) {
         listViewBtn.classList.remove('active');
         localStorage.setItem('viewMode', 'grid');
     }
+}
+
+// View all days at once
+function viewAllDays() {
+    // Update active tab
+    tabs.forEach(tab => tab.classList.remove('active'));
+    viewAllBtn.classList.add('active');
+    
+    // Update title
+    dayTitle.textContent = 'Tổng quan tất cả các ngày';
+    
+    // Collect all locations from all days
+    const allLocations = [];
+    currentData.days.forEach((day, dayIndex) => {
+        day.locations.forEach((location, locIndex) => {
+            allLocations.push({
+                ...location,
+                dayInfo: day.title,
+                originalDayIndex: dayIndex,
+                originalLocationIndex: locIndex
+            });
+        });
+    });
+    
+    // Render all locations
+    renderAllDaysLocations(allLocations);
+    
+    // Update summary
+    updateSummary();
+    
+    // Update map with all locations
+    updateMapAllDays();
+}
+
+// Render all locations from all days
+function renderAllDaysLocations(allLocations) {
+    locationList.innerHTML = '';
+    
+    currentData.days.forEach((day, dayIndex) => {
+        // Add day header
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'day-header-all';
+        dayHeader.innerHTML = `
+            <h3>${day.title}</h3>
+            <span class="day-location-count">${day.locations.length} địa điểm</span>
+        `;
+        locationList.appendChild(dayHeader);
+        
+        // Render locations for this day
+        const sortedLocations = sortLocationsByTime(day.locations);
+        sortedLocations.forEach((location, index) => {
+            const locationItem = createLocationElement(location, index, dayIndex);
+            locationList.appendChild(locationItem);
+        });
+    });
+}
+
+// Update map with all days locations
+function updateMapAllDays() {
+    const allLocations = [];
+    currentData.days.forEach(day => {
+        day.locations.forEach(loc => {
+            if (loc.lat && loc.lng) {
+                allLocations.push(loc);
+            }
+        });
+    });
+    
+    if (allLocations.length === 0) {
+        map.src = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d235526.38171157738!2d104.77890704999999!3d22.8024863!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x36cd41ab7f42c273%3A0x1b180d9cfb91af02!2zSMOgIEdpYW5n!5e0!3m2!1svi!2s!4v1234567890';
+        return;
+    }
+    
+    let markers = '';
+    allLocations.forEach((loc, index) => {
+        markers += `&markers=color:red%7Clabel:${index + 1}%7C${loc.lat},${loc.lng}`;
+    });
+    
+    const center = `${allLocations[0].lat},${allLocations[0].lng}`;
+    map.src = `https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&center=${center}&zoom=10${markers}`;
 }
 
 // Render a specific day
@@ -258,11 +337,14 @@ function formatClothingDisplay(clothing) {
 }
 
 // Create location element
-function createLocationElement(location, index) {
+function createLocationElement(location, index, dayIndex = null) {
     const div = document.createElement('div');
     div.className = 'location-item';
     
     const hasDistance = location.distance > 0;
+    
+    // Use provided dayIndex or default to currentDay
+    const actualDayIndex = dayIndex !== null ? dayIndex : (currentDay - 1);
     
     div.innerHTML = `
         <div class="location-header">
@@ -429,16 +511,10 @@ function openEditModal(location, index) {
     // Load clothing data
     loadClothingData(location.clothing);
     
-    // Clear previous search results
-    document.getElementById('placeResults').innerHTML = '';
-    document.getElementById('placeSearch').value = '';
-    
-    // Initialize Places Service if not already done
-    if (!placesService) {
-        setTimeout(() => {
-            initPlacesService();
-        }, 100);
-    }
+    // Clear previous inputs
+    document.getElementById('mapsLink').value = '';
+    document.getElementById('extractStatus').textContent = '';
+    document.getElementById('extractStatus').className = 'extract-status';
     
     editModal.classList.add('active');
 }
@@ -741,12 +817,104 @@ function deleteLocation(index) {
 // GOOGLE MAPS LINK EXTRACTION
 // ============================================
 
+async function extractCoordinatesFromLink() {
+    const link = mapsLinkInput.value.trim();
+    
+    if (!link) {
+        showExtractStatus('⚠️ Vui lòng nhập link Google Maps', 'error');
+        return;
+    }
+    
+    try {
+        showExtractStatus('🔄 Đang xử lý...', 'info');
+        
+        // Pattern 1: Direct coordinates in URL (e.g., ?q=lat,lng or @lat,lng)
+        const coordPattern1 = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
+        const coordPattern2 = /q=(-?\d+\.\d+),(-?\d+\.\d+)/;
+        const coordPattern3 = /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/;
+        
+        let match = link.match(coordPattern1) || link.match(coordPattern2);
+        
+        if (match) {
+            const lat = parseFloat(match[1]);
+            const lng = parseFloat(match[2]);
+            updateCoordinatesAndMap(lat, lng);
+            return;
+        }
+        
+        // Pattern 2: Place data with coordinates
+        match = link.match(coordPattern3);
+        if (match) {
+            const lat = parseFloat(match[1]);
+            const lng = parseFloat(match[2]);
+            updateCoordinatesAndMap(lat, lng);
+            return;
+        }
+        
+        // Pattern 3: Short link (goo.gl) - need to follow redirect
+        if (link.includes('maps.app.goo.gl') || link.includes('goo.gl')) {
+            try {
+                const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(link)}`);
+                const html = await response.text();
+                
+                // Try to find coordinates in the redirected HTML
+                const metaMatch = html.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || 
+                                 html.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+                
+                if (metaMatch) {
+                    const lat = parseFloat(metaMatch[1]);
+                    const lng = parseFloat(metaMatch[2]);
+                    updateCoordinatesAndMap(lat, lng);
+                    return;
+                }
+            } catch (error) {
+                console.error('Error fetching short link:', error);
+            }
+        }
+        
+        showExtractStatus('❌ Không tìm thấy tọa độ trong link này. Hãy thử mở link trên Google Maps và copy link đầy đủ.', 'error');
+        
+    } catch (error) {
+        console.error('Error extracting coordinates:', error);
+        showExtractStatus('❌ Lỗi khi xử lý link: ' + error.message, 'error');
+    }
+}
+
+// Helper function to update coordinates and map
+function updateCoordinatesAndMap(lat, lng) {
+    document.getElementById('editLat').value = lat;
+    document.getElementById('editLng').value = lng;
+    
+    // Auto update location object and refresh map
+    if (editingLocation !== null) {
+        const dayData = currentData.days[currentDay - 1];
+        const location = dayData.locations[editingLocation];
+        location.lat = lat;
+        location.lng = lng;
+        updateMap(); // Refresh map with new coordinates
+    }
+    
+    showExtractStatus(`✅ Đã lấy tọa độ: ${lat.toFixed(6)}, ${lng.toFixed(6)}`, 'success');
+}
+
+function showExtractStatus(message, type) {
+    extractStatus.textContent = message;
+    extractStatus.className = `extract-status ${type}`;
+    
+    if (type === 'success' || type === 'error') {
+        setTimeout(() => {
+            extractStatus.textContent = '';
+            extractStatus.className = 'extract-status';
+        }, 5000);
+    }
+}
+
 // ============================================
-// GOOGLE PLACES SEARCH WITH RESULTS LIST
+// DEPRECATED: GOOGLE PLACES SEARCH (Not used anymore)
 // ============================================
 
 let placesService;
-let map; // Hidden map for PlacesService
+let hiddenMap; // Hidden map for PlacesService
 
 // Initialize Places Service (called once)
 function initPlacesService() {
@@ -760,8 +928,8 @@ function initPlacesService() {
     hiddenMapDiv.style.display = 'none';
     document.body.appendChild(hiddenMapDiv);
     
-    map = new google.maps.Map(hiddenMapDiv);
-    placesService = new google.maps.places.PlacesService(map);
+    hiddenMap = new google.maps.Map(hiddenMapDiv);
+    placesService = new google.maps.places.PlacesService(hiddenMap);
 }
 
 // Search for places when user clicks search button

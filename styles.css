@@ -126,6 +126,23 @@ body {
     background: #059669;
 }
 
+.tab[data-day="all"] {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tab[data-day="all"].active {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.tab[data-day="all"] svg {
+    width: 16px;
+    height: 16px;
+}
+
 /* Main Content */
 .main-content {
     display: grid;
@@ -349,6 +366,37 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
+}
+
+/* Day header for "View All" mode */
+.day-header-all {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    margin-top: 24px;
+}
+
+.day-header-all:first-child {
+    margin-top: 0;
+}
+
+.day-header-all h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.day-location-count {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
 }
 
 .location-item {
