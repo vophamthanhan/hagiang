@@ -170,10 +170,10 @@
           "activities": "Chụp ảnh, ngắm cảnh",
           "meals": "",
           "accommodation": "",
-          "lat": 23.225789,
-          "lng": 105.2037602,
+          "lat": 23.20984,
+          "lng": 105.1924693,
           "note": "Cung đường đèo ấn tượng.",
-          "clothing": [],
+          "clothing": null,
           "distance": null,
           "duration": null
         },
