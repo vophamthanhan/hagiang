@@ -368,6 +368,121 @@ body {
     gap: 20px;
 }
 
+/* Table View Container */
+.table-view-container {
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+.table-wrapper {
+    min-width: 100%;
+    overflow-x: auto;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.itinerary-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    font-size: 0.9rem;
+}
+
+.itinerary-table thead {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.itinerary-table th {
+    padding: 14px 12px;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.itinerary-table th:last-child {
+    border-right: none;
+}
+
+.itinerary-table tbody tr {
+    border-bottom: 1px solid #e5e7eb;
+    transition: background 0.2s ease;
+}
+
+.itinerary-table tbody tr:hover {
+    background: #f0f9ff;
+}
+
+.itinerary-table tbody tr.even-day {
+    background: #f9fafb;
+}
+
+.itinerary-table tbody tr.odd-day {
+    background: #ffffff;
+}
+
+.itinerary-table tbody tr.even-day:hover,
+.itinerary-table tbody tr.odd-day:hover {
+    background: #e0f2fe;
+}
+
+.itinerary-table td {
+    padding: 12px;
+    border-right: 1px solid #e5e7eb;
+    vertical-align: top;
+}
+
+.itinerary-table td:last-child {
+    border-right: none;
+}
+
+.itinerary-table td.center {
+    text-align: center;
+}
+
+.itinerary-table td.day-cell {
+    background: rgba(59, 130, 246, 0.1);
+    font-weight: 600;
+    color: #1e40af;
+}
+
+.itinerary-table td.note-cell {
+    max-width: 200px;
+    white-space: pre-wrap;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.itinerary-table td.coords-cell {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #059669;
+}
+
+.itinerary-table td.action-cell {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.btn-edit-table {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.btn-edit-table:hover {
+    background: #dbeafe;
+    transform: scale(1.1);
+}
+
 /* Day header for "View All" mode */
 .day-header-all {
     display: flex;

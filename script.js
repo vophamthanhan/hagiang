@@ -26,12 +26,14 @@ const tokenInput = document.getElementById('tokenInput');
 const toggleTokenBtn = document.getElementById('toggleTokenBtn');
 const clearTokenBtn = document.getElementById('clearTokenBtn');
 const tokenStatus = document.getElementById('tokenStatus');
-const mapsLinkInput = document.getElementById('mapsLink');
+const mapsIframeInput = document.getElementById('mapsIframe');
 const extractBtn = document.getElementById('extractBtn');
 const extractStatus = document.getElementById('extractStatus');
 const listViewBtn = document.getElementById('listViewBtn');
 const gridViewBtn = document.getElementById('gridViewBtn');
 const viewAllBtn = document.getElementById('viewAllBtn');
+const tableViewContainer = document.getElementById('tableViewContainer');
+const itineraryTable = document.getElementById('itineraryTable');
 
 // Initialize app
 async function init() {
@@ -178,30 +180,21 @@ function switchView(viewMode) {
     }
 }
 
-// View all days at once
+// View all days at once - Show as Excel-like table
 function viewAllDays() {
     // Update active tab
     tabs.forEach(tab => tab.classList.remove('active'));
     viewAllBtn.classList.add('active');
     
     // Update title
-    dayTitle.textContent = 'Tổng quan tất cả các ngày';
+    dayTitle.textContent = 'Tổng quan tất cả các ngày - Dạng bảng';
     
-    // Collect all locations from all days
-    const allLocations = [];
-    currentData.days.forEach((day, dayIndex) => {
-        day.locations.forEach((location, locIndex) => {
-            allLocations.push({
-                ...location,
-                dayInfo: day.title,
-                originalDayIndex: dayIndex,
-                originalLocationIndex: locIndex
-            });
-        });
-    });
+    // Hide location list, show table
+    locationList.style.display = 'none';
+    tableViewContainer.style.display = 'block';
     
-    // Render all locations
-    renderAllDaysLocations(allLocations);
+    // Render table
+    renderTableView();
     
     // Update summary
     updateSummary();
@@ -265,6 +258,10 @@ function renderDay(day) {
     // Update title
     dayTitle.textContent = dayData.title;
     
+    // Show location list, hide table
+    locationList.style.display = 'flex';
+    tableViewContainer.style.display = 'none';
+    
     // Render locations
     renderLocations(dayData.locations);
     
@@ -274,6 +271,67 @@ function renderDay(day) {
     // Update map
     updateMap();
 }
+
+// Render table view (Excel-like) for all days
+function renderTableView() {
+    let tableHTML = `
+        <thead>
+            <tr>
+                <th>Ngày</th>
+                <th>STT</th>
+                <th>Giờ</th>
+                <th>Tên địa điểm</th>
+                <th>Hoạt động</th>
+                <th>Bữa ăn</th>
+                <th>Chỗ nghỉ</th>
+                <th>Ghi chú</th>
+                <th>Khoảng cách</th>
+                <th>Tọa độ</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+    `;
+    
+    currentData.days.forEach((day, dayIndex) => {
+        const sortedLocations = sortLocationsByTime(day.locations);
+        sortedLocations.forEach((location, locIndex) => {
+            const rowClass = dayIndex % 2 === 0 ? 'even-day' : 'odd-day';
+            tableHTML += `
+                <tr class="${rowClass}">
+                    <td class="day-cell"><strong>${day.date}</strong></td>
+                    <td class="center">${location.id}</td>
+                    <td class="center">${location.time || '-'}</td>
+                    <td><strong>${location.name}</strong></td>
+                    <td>${location.activities || '-'}</td>
+                    <td class="center">${location.meals || '-'}</td>
+                    <td>${location.accommodation || '-'}</td>
+                    <td class="note-cell">${location.note || '-'}</td>
+                    <td class="center">${location.distance > 0 ? location.distance + ' km' : '-'}</td>
+                    <td class="coords-cell">${location.lat && location.lng ? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}` : '-'}</td>
+                    <td class="action-cell">
+                        <button class="btn-edit-table" onclick="openEditModalFromTable(${dayIndex}, ${locIndex})" title="Chỉnh sửa">
+                            ✏️
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+    });
+    
+    tableHTML += `
+        </tbody>
+    `;
+    
+    itineraryTable.innerHTML = tableHTML;
+}
+
+// Open edit modal from table view
+window.openEditModalFromTable = function(dayIndex, locationIndex) {
+    currentDay = dayIndex + 1;
+    const location = currentData.days[dayIndex].locations[locationIndex];
+    openEditModal(location, locationIndex);
+};
 
 // Render locations list
 function renderLocations(locations) {
@@ -512,7 +570,7 @@ function openEditModal(location, index) {
     loadClothingData(location.clothing);
     
     // Clear previous inputs
-    document.getElementById('mapsLink').value = '';
+    document.getElementById('mapsIframe').value = '';
     document.getElementById('extractStatus').textContent = '';
     document.getElementById('extractStatus').className = 'extract-status';
     
@@ -814,27 +872,44 @@ function deleteLocation(index) {
 }
 
 // ============================================
-// GOOGLE MAPS LINK EXTRACTION
+// GOOGLE MAPS IFRAME EXTRACTION
 // ============================================
 
 async function extractCoordinatesFromLink() {
-    const link = mapsLinkInput.value.trim();
+    const iframeCode = mapsIframeInput.value.trim();
     
-    if (!link) {
-        showExtractStatus('⚠️ Vui lòng nhập link Google Maps', 'error');
+    if (!iframeCode) {
+        showExtractStatus('⚠️ Vui lòng nhập mã iframe từ Google Maps', 'error');
         return;
     }
     
     try {
         showExtractStatus('🔄 Đang xử lý...', 'info');
         
-        // Pattern 1: Direct coordinates in URL (e.g., ?q=lat,lng or @lat,lng)
-        const coordPattern1 = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
-        const coordPattern2 = /q=(-?\d+\.\d+),(-?\d+\.\d+)/;
-        const coordPattern3 = /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/;
+        // Extract src URL from iframe
+        const srcMatch = iframeCode.match(/src=["']([^"']+)["']/i);
+        if (!srcMatch) {
+            showExtractStatus('❌ Không tìm thấy URL trong iframe. Hãy đảm bảo paste đúng mã iframe.', 'error');
+            return;
+        }
         
-        let match = link.match(coordPattern1) || link.match(coordPattern2);
+        const embedUrl = srcMatch[1];
+        console.log('Extracted embed URL:', embedUrl);
         
+        // Extract coordinates from pb parameter in embed URL
+        // Format: !1d<lng>!2d<lat> or !3d<lat>!4d<lng>
+        const pbPattern = /!2d(-?\d+\.\d+)!3d(-?\d+\.\d+)/; // lng, lat
+        const pbPattern2 = /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/; // lat, lng
+        
+        let match = embedUrl.match(pbPattern);
+        if (match) {
+            const lng = parseFloat(match[1]);
+            const lat = parseFloat(match[2]);
+            updateCoordinatesAndMap(lat, lng);
+            return;
+        }
+        
+        match = embedUrl.match(pbPattern2);
         if (match) {
             const lat = parseFloat(match[1]);
             const lng = parseFloat(match[2]);
@@ -842,8 +917,9 @@ async function extractCoordinatesFromLink() {
             return;
         }
         
-        // Pattern 2: Place data with coordinates
-        match = link.match(coordPattern3);
+        // Try center parameter
+        const centerPattern = /center=(-?\d+\.\d+)%2C(-?\d+\.\d+)/;
+        match = embedUrl.match(centerPattern);
         if (match) {
             const lat = parseFloat(match[1]);
             const lng = parseFloat(match[2]);
@@ -851,32 +927,21 @@ async function extractCoordinatesFromLink() {
             return;
         }
         
-        // Pattern 3: Short link (goo.gl) - need to follow redirect
-        if (link.includes('maps.app.goo.gl') || link.includes('goo.gl')) {
-            try {
-                const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(link)}`);
-                const html = await response.text();
-                
-                // Try to find coordinates in the redirected HTML
-                const metaMatch = html.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || 
-                                 html.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
-                
-                if (metaMatch) {
-                    const lat = parseFloat(metaMatch[1]);
-                    const lng = parseFloat(metaMatch[2]);
-                    updateCoordinatesAndMap(lat, lng);
-                    return;
-                }
-            } catch (error) {
-                console.error('Error fetching short link:', error);
-            }
+        // Try q parameter
+        const qPattern = /[?&]q=(-?\d+\.\d+)%2C(-?\d+\.\d+)/;
+        match = embedUrl.match(qPattern);
+        if (match) {
+            const lat = parseFloat(match[1]);
+            const lng = parseFloat(match[2]);
+            updateCoordinatesAndMap(lat, lng);
+            return;
         }
         
-        showExtractStatus('❌ Không tìm thấy tọa độ trong link này. Hãy thử mở link trên Google Maps và copy link đầy đủ.', 'error');
+        showExtractStatus('❌ Không tìm thấy tọa độ trong iframe. Hãy thử share lại từ Google Maps và chọn "Embed a map".', 'error');
         
     } catch (error) {
         console.error('Error extracting coordinates:', error);
-        showExtractStatus('❌ Lỗi khi xử lý link: ' + error.message, 'error');
+        showExtractStatus('❌ Lỗi khi xử lý iframe: ' + error.message, 'error');
     }
 }
 
