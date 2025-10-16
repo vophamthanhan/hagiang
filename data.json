@@ -172,8 +172,8 @@
           "accommodation": "",
           "lat": 23.225789,
           "lng": 105.2037602,
-          "note": "Khám phá bối cảnh bộ phim nổi tiếng.",
-          "clothing": [],
+          "note": "",
+          "clothing": null,
           "distance": null,
           "duration": null
         },
