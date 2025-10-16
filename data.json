@@ -37,10 +37,10 @@
           "activities": "Tới TP. Hà Giang, check-in cột mốc KM0",
           "meals": "Trưa",
           "accommodation": "",
-          "lat": 22.727778,
-          "lng": 105,
+          "lat": 22.8274375,
+          "lng": 104.9841875,
           "note": "Chụp ảnh lưu niệm, ăn trưa tại TP. Hà Giang.",
-          "clothing": [],
+          "clothing": null,
           "distance": null,
           "duration": null
         },
