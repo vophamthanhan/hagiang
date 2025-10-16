@@ -887,7 +887,119 @@ body {
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-/* Google Maps Link Input */
+/* Google Maps Place Search */
+.place-search-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.place-search-container input {
+    flex: 1;
+}
+
+.btn-search-place {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-search-place:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-search-place:active {
+    transform: translateY(0);
+}
+
+.btn-search-place svg {
+    flex-shrink: 0;
+}
+
+.place-results {
+    margin-top: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+    border-radius: 8px;
+    background: white;
+}
+
+.place-results:empty {
+    display: none;
+}
+
+.place-result-item {
+    padding: 12px 16px;
+    border: 1px solid #e5e7eb;
+    border-top: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: start;
+    gap: 12px;
+}
+
+.place-result-item:first-child {
+    border-top: 1px solid #e5e7eb;
+    border-radius: 8px 8px 0 0;
+}
+
+.place-result-item:last-child {
+    border-radius: 0 0 8px 8px;
+}
+
+.place-result-item:only-child {
+    border-radius: 8px;
+}
+
+.place-result-item:hover {
+    background: #f0f9ff;
+    border-color: #3b82f6;
+}
+
+.place-result-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.place-result-content {
+    flex: 1;
+}
+
+.place-result-name {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.place-result-address {
+    font-size: 0.85rem;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+.place-results-empty {
+    padding: 16px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.9rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+/* Google Maps Link Input - legacy styles kept for compatibility */
 .maps-link-input {
     display: flex;
     gap: 10px;

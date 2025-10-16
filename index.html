@@ -229,10 +229,17 @@
                     </div>
                     <div class="form-group">
                         <label>📍 Tìm kiếm địa điểm trên Google Maps</label>
-                        <input type="text" id="placeSearch" placeholder="Gõ tên địa điểm và chọn từ danh sách gợi ý..." autocomplete="off">
-                        <small style="color: #666; display: block; margin-top: 5px; font-size: 12px;">
-                            💡 Ví dụ: Cột cờ Lũng Cú, Mã Pí Lèng, TP Hà Giang...
-                        </small>
+                        <div class="place-search-container">
+                            <input type="text" id="placeSearch" placeholder="Nhập tên địa điểm (VD: Cột cờ Lũng Cú, Mã Pí Lèng...)" autocomplete="off">
+                            <button type="button" class="btn-search-place" id="searchPlaceBtn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <path d="m21 21-4.35-4.35"/>
+                                </svg>
+                                Tìm
+                            </button>
+                        </div>
+                        <div id="placeResults" class="place-results"></div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">

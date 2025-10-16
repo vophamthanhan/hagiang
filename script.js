@@ -101,6 +101,17 @@ function attachEventListeners() {
         generateClothingTable(numPeople);
     });
     
+    // Place search button
+    document.getElementById('searchPlaceBtn').addEventListener('click', searchPlaces);
+    
+    // Allow Enter key to trigger search
+    document.getElementById('placeSearch').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchPlaces();
+        }
+    });
+    
     // View toggle buttons
     listViewBtn.addEventListener('click', () => switchView('list'));
     gridViewBtn.addEventListener('click', () => switchView('grid'));
@@ -418,12 +429,18 @@ function openEditModal(location, index) {
     // Load clothing data
     loadClothingData(location.clothing);
     
-    editModal.classList.add('active');
+    // Clear previous search results
+    document.getElementById('placeResults').innerHTML = '';
+    document.getElementById('placeSearch').value = '';
     
-    // Initialize Google Places Autocomplete after modal is open
-    setTimeout(() => {
-        initAutocomplete();
-    }, 100);
+    // Initialize Places Service if not already done
+    if (!placesService) {
+        setTimeout(() => {
+            initPlacesService();
+        }, 100);
+    }
+    
+    editModal.classList.add('active');
 }
 
 // Load clothing data into table
@@ -725,62 +742,129 @@ function deleteLocation(index) {
 // ============================================
 
 // ============================================
-// GOOGLE PLACES AUTOCOMPLETE
+// GOOGLE PLACES SEARCH WITH RESULTS LIST
 // ============================================
 
-let autocomplete;
-let placeSelectedManually = false;
+let placesService;
+let map; // Hidden map for PlacesService
 
-function initAutocomplete() {
-    const searchInput = document.getElementById('placeSearch');
-    
-    if (!searchInput || !google || !google.maps || !google.maps.places) {
+// Initialize Places Service (called once)
+function initPlacesService() {
+    if (!google || !google.maps || !google.maps.places) {
         console.error('Google Places API not loaded');
         return;
     }
     
-    // Initialize Autocomplete with Vietnam bias
-    autocomplete = new google.maps.places.Autocomplete(searchInput, {
-        componentRestrictions: { country: 'vn' },
-        fields: ['place_id', 'geometry', 'name', 'formatted_address']
-    });
+    // Create a hidden map element for PlacesService (required by API)
+    const hiddenMapDiv = document.createElement('div');
+    hiddenMapDiv.style.display = 'none';
+    document.body.appendChild(hiddenMapDiv);
     
-    // Listen for place selection
-    autocomplete.addListener('place_changed', function() {
-        placeSelectedManually = true;
-        const place = autocomplete.getPlace();
-        
-        if (!place.geometry || !place.geometry.location) {
-            showNotification('❌ Không tìm thấy tọa độ cho địa điểm này', 'error');
-            return;
+    map = new google.maps.Map(hiddenMapDiv);
+    placesService = new google.maps.places.PlacesService(map);
+}
+
+// Search for places when user clicks search button
+function searchPlaces() {
+    const searchInput = document.getElementById('placeSearch');
+    const resultsContainer = document.getElementById('placeResults');
+    const query = searchInput.value.trim();
+    
+    if (!query) {
+        showNotification('⚠️ Vui lòng nhập tên địa điểm', 'error');
+        return;
+    }
+    
+    if (!placesService) {
+        initPlacesService();
+    }
+    
+    // Show loading
+    resultsContainer.innerHTML = '<div class="place-results-empty">🔄 Đang tìm kiếm...</div>';
+    
+    // Search using Places API Text Search
+    const request = {
+        query: query,
+        fields: ['name', 'formatted_address', 'geometry', 'place_id'],
+        locationBias: {
+            center: { lat: 22.5, lng: 105.0 }, // Ha Giang area
+            radius: 200000 // 200km radius
         }
-        
-        // Get coordinates
-        const lat = place.geometry.location.lat();
-        const lng = place.geometry.location.lng();
-        
-        // Fill coordinates into form
-        document.getElementById('editLat').value = lat;
-        document.getElementById('editLng').value = lng;
-        
-        // Update location name if empty or default
-        const nameInput = document.getElementById('editName');
-        if (!nameInput.value || nameInput.value === 'Địa điểm mới') {
-            nameInput.value = place.name;
+    };
+    
+    placesService.textSearch(request, (results, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+            displayResults(results);
+        } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+            resultsContainer.innerHTML = '<div class="place-results-empty">❌ Không tìm thấy kết quả nào</div>';
+        } else {
+            resultsContainer.innerHTML = '<div class="place-results-empty">❌ Lỗi khi tìm kiếm. Vui lòng thử lại</div>';
+            console.error('Places search failed:', status);
         }
-        
-        // Update location object and map in real-time
-        if (editingLocation !== null) {
-            const dayData = currentData.days[currentDay - 1];
-            const location = dayData.locations[editingLocation];
-            location.lat = lat;
-            location.lng = lng;
-            updateMap(); // Refresh map immediately
-        }
-        
-        // Show success notification
-        showNotification(`✅ Đã lấy tọa độ: ${place.name}`, 'success');
     });
+}
+
+// Display search results
+function displayResults(places) {
+    const resultsContainer = document.getElementById('placeResults');
+    resultsContainer.innerHTML = '';
+    
+    places.forEach((place, index) => {
+        const resultItem = document.createElement('div');
+        resultItem.className = 'place-result-item';
+        resultItem.innerHTML = `
+            <div class="place-result-icon">📍</div>
+            <div class="place-result-content">
+                <div class="place-result-name">${place.name}</div>
+                <div class="place-result-address">${place.formatted_address || 'Không có địa chỉ'}</div>
+            </div>
+        `;
+        
+        // Add click handler to select this place
+        resultItem.addEventListener('click', () => selectPlace(place));
+        
+        resultsContainer.appendChild(resultItem);
+    });
+}
+
+// When user selects a place from results
+function selectPlace(place) {
+    if (!place.geometry || !place.geometry.location) {
+        showNotification('❌ Không tìm thấy tọa độ cho địa điểm này', 'error');
+        return;
+    }
+    
+    // Get coordinates
+    const lat = place.geometry.location.lat();
+    const lng = place.geometry.location.lng();
+    
+    // Fill coordinates into form
+    document.getElementById('editLat').value = lat;
+    document.getElementById('editLng').value = lng;
+    
+    // Update search input with selected place name
+    document.getElementById('placeSearch').value = place.name;
+    
+    // Update location name if empty or default
+    const nameInput = document.getElementById('editName');
+    if (!nameInput.value || nameInput.value === 'Địa điểm mới') {
+        nameInput.value = place.name;
+    }
+    
+    // Update location object and map in real-time
+    if (editingLocation !== null) {
+        const dayData = currentData.days[currentDay - 1];
+        const location = dayData.locations[editingLocation];
+        location.lat = lat;
+        location.lng = lng;
+        updateMap(); // Refresh map immediately
+    }
+    
+    // Clear results
+    document.getElementById('placeResults').innerHTML = '';
+    
+    // Show success notification
+    showNotification(`✅ Đã chọn: ${place.name}`, 'success');
 }
 
 // Helper function to show notifications
