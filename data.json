@@ -74,20 +74,6 @@
         },
         {
           "id": 5,
-          "name": "Núi đôi Cô Tiên",
-          "time": "15:00",
-          "activities": "Tham quan, chụp ảnh",
-          "meals": "",
-          "accommodation": "",
-          "lat": 23.080556,
-          "lng": 105,
-          "note": "Ngắm cảnh đẹp, tìm hiểu truyền thuyết.",
-          "clothing": [],
-          "distance": null,
-          "duration": null
-        },
-        {
-          "id": 6,
           "name": "Cổng Trời Quản Bạ",
           "time": "16:00",
           "activities": "Ngắm cảnh hoàng hôn",
@@ -101,7 +87,7 @@
           "duration": null
         },
         {
-          "id": 7,
+          "id": 6,
           "name": "Homestay Lô Lô Time",
           "time": "18:00",
           "activities": "Nhận phòng, ăn tối",
@@ -115,7 +101,7 @@
           "duration": null
         },
         {
-          "id": 8,
+          "id": 7,
           "name": "Địa điểm mới",
           "time": "",
           "activities": "",
