@@ -165,20 +165,6 @@
         },
         {
           "id": 5,
-          "name": "Đồng Văn",
-          "time": "10:30",
-          "activities": "Ăn trưa tại Đồng Văn",
-          "meals": "Trưa",
-          "accommodation": "",
-          "lat": null,
-          "lng": null,
-          "note": "Thưởng thức ẩm thực địa phương.",
-          "clothing": null,
-          "distance": null,
-          "duration": null
-        },
-        {
-          "id": 6,
           "name": "Dốc Chín Khoanh",
           "time": "13:00",
           "activities": "Chụp ảnh, ngắm cảnh",
@@ -192,7 +178,7 @@
           "duration": null
         },
         {
-          "id": 7,
+          "id": 6,
           "name": "Mã Pí Lèng",
           "time": "15:00",
           "activities": "Ngắm cảnh hẻm Tu Sản, sông Nho Quế",
@@ -206,7 +192,7 @@
           "duration": null
         },
         {
-          "id": 8,
+          "id": 7,
           "name": "Homestay Đồng Văn",
           "time": "16:00",
           "activities": "Nhận phòng, ăn tối",
