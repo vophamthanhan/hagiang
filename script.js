@@ -919,12 +919,19 @@ async function loadDataFromGitHub() {
         // Decode base64 content
         const content = atob(result.content);
         
-        // Extract defaultData from the file
-        const match = content.match(/const defaultData = ({[\s\S]*?});/);
-        if (match) {
-            const data = JSON.parse(match[1]);
-            console.log('Loaded data from GitHub');
-            return data;
+        // Extract defaultData from the file by executing it in a safe context
+        try {
+            // Create a safe evaluation context
+            const dataMatch = content.match(/const defaultData = ({[\s\S]*});/);
+            if (dataMatch) {
+                // Use Function constructor to safely evaluate the JavaScript object
+                const evalFunc = new Function('return ' + dataMatch[1]);
+                const data = evalFunc();
+                console.log('Loaded data from GitHub');
+                return data;
+            }
+        } catch (parseError) {
+            console.error('Error parsing data object:', parseError);
         }
         
         console.log('Could not parse data from GitHub file');
