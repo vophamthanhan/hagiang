@@ -15,7 +15,18 @@
           "lat": 21.030556,
           "lng": 105.85,
           "note": "Chuẩn bị đầy đủ hành lý, kiểm tra xe cộ.",
-          "clothing": [],
+          "clothing": [
+            {
+              "name": "Anh",
+              "clothing": "áo polo..",
+              "note": ""
+            },
+            {
+              "name": "Em",
+              "clothing": "..",
+              "note": ""
+            }
+          ],
           "distance": null,
           "duration": null
         },
