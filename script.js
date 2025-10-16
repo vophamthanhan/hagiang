@@ -1,8 +1,9 @@
 // Global state
-let currentData = initializeData();
+let currentData = JSON.parse(JSON.stringify(defaultData)); // Clone from data.js
 let currentDay = 1;
 let editingLocation = null;
 let showingRoute = false;
+let gitHubFileSha = null; // Store current file SHA for GitHub API
 
 // DOM elements
 const tabs = document.querySelectorAll('.tab');
@@ -17,12 +18,33 @@ const editModal = document.getElementById('editModal');
 const closeModal = document.getElementById('closeModal');
 const cancelBtn = document.getElementById('cancelBtn');
 const editForm = document.getElementById('editForm');
+const settingsModal = document.getElementById('settingsModal');
+const settingsBtn = document.getElementById('settingsBtn');
+const backupBtn = document.getElementById('backupBtn');
+const closeSettingsModal = document.getElementById('closeSettingsModal');
+const settingsForm = document.getElementById('settingsForm');
+const tokenInput = document.getElementById('tokenInput');
+const toggleTokenBtn = document.getElementById('toggleTokenBtn');
+const clearTokenBtn = document.getElementById('clearTokenBtn');
+const tokenStatus = document.getElementById('tokenStatus');
 
 // Initialize app
-function init() {
+async function init() {
+    // Load token from localStorage if config.js not available
+    loadTokenFromStorage();
+    
+    // Try to load data from GitHub
+    const githubData = await loadDataFromGitHub();
+    if (githubData) {
+        currentData = githubData;
+    }
+    
     updateMap();
     renderDay(currentDay);
     attachEventListeners();
+    
+    // Show token status
+    updateTokenStatus();
 }
 
 // Attach event listeners
@@ -66,11 +88,36 @@ function attachEventListeners() {
         const numPeople = parseInt(document.getElementById('numPeople').value) || 1;
         generateClothingTable(numPeople);
     });
+    
+    // Settings button
+    settingsBtn.addEventListener('click', openSettingsModal);
+    closeSettingsModal.addEventListener('click', closeSettings);
+    
+    // Backup button
+    backupBtn.addEventListener('click', downloadBackup);
+    
+    // Settings form
+    settingsForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        saveToken();
+    });
+    
+    // Toggle token visibility
+    toggleTokenBtn.addEventListener('click', toggleTokenVisibility);
+    
+    // Clear token
+    clearTokenBtn.addEventListener('click', clearToken);
 
     // Close modal when clicking outside
     editModal.addEventListener('click', (e) => {
         if (e.target === editModal) {
             closeEditModal();
+        }
+    });
+    
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) {
+            closeSettings();
         }
     });
 }
@@ -451,7 +498,7 @@ function saveLocationEdit() {
     // Re-number locations after sorting
     renumberLocations(dayData.locations);
     
-    saveData(currentData);
+    saveDataWithBackup(currentData);
     renderDay(currentDay);
     closeEditModal();
 }
@@ -494,7 +541,7 @@ function addNewLocation() {
     // Renumber after adding
     renumberLocations(dayData.locations);
     
-    saveData(currentData);
+    saveDataWithBackup(currentData);
     renderDay(currentDay);
     
     // Open edit modal for the new location (find it by time since index may change)
@@ -631,8 +678,302 @@ function deleteLocation(index) {
     renumberLocations(dayData.locations);
     
     // Save and re-render
-    saveData(currentData);
+    saveDataWithBackup(currentData);
     renderDay(currentDay);
+}
+
+// ============================================
+// SETTINGS & TOKEN MANAGEMENT
+// ============================================
+
+function loadTokenFromStorage() {
+    const savedToken = localStorage.getItem('githubToken');
+    if (savedToken && GITHUB_CONFIG) {
+        GITHUB_CONFIG.token = savedToken;
+    }
+}
+
+function openSettingsModal() {
+    tokenInput.value = GITHUB_CONFIG?.token || '';
+    settingsModal.classList.add('active');
+    updateTokenStatus();
+}
+
+function closeSettings() {
+    settingsModal.classList.remove('active');
+    tokenInput.value = '';
+    tokenStatus.className = 'token-status';
+}
+
+function saveToken() {
+    const token = tokenInput.value.trim();
+    
+    if (!token) {
+        showTokenStatus('⚠️ Vui lòng nhập token!', 'error');
+        return;
+    }
+    
+    if (!token.startsWith('ghp_') && !token.startsWith('github_pat_')) {
+        showTokenStatus('⚠️ Token không hợp lệ! Token phải bắt đầu bằng ghp_ hoặc github_pat_', 'error');
+        return;
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('githubToken', token);
+    
+    // Update config
+    if (GITHUB_CONFIG) {
+        GITHUB_CONFIG.token = token;
+    }
+    
+    showTokenStatus('✅ Đã lưu token! Bạn có thể chỉnh sửa dữ liệu ngay.', 'success');
+    
+    setTimeout(() => {
+        closeSettings();
+        location.reload(); // Reload to apply new token
+    }, 1500);
+}
+
+function clearToken() {
+    if (!confirm('Bạn có chắc muốn xóa token? Bạn sẽ không thể lưu dữ liệu nữa.')) {
+        return;
+    }
+    
+    localStorage.removeItem('githubToken');
+    
+    if (GITHUB_CONFIG) {
+        GITHUB_CONFIG.token = '';
+    }
+    
+    tokenInput.value = '';
+    showTokenStatus('🗑️ Đã xóa token!', 'info');
+    
+    setTimeout(() => {
+        closeSettings();
+        location.reload();
+    }, 1000);
+}
+
+function toggleTokenVisibility() {
+    if (tokenInput.type === 'password') {
+        tokenInput.type = 'text';
+        toggleTokenBtn.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+        `;
+    } else {
+        tokenInput.type = 'password';
+        toggleTokenBtn.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
+        `;
+    }
+}
+
+function showTokenStatus(message, type) {
+    tokenStatus.textContent = message;
+    tokenStatus.className = `token-status ${type}`;
+}
+
+function updateTokenStatus() {
+    const hasToken = GITHUB_CONFIG?.token && GITHUB_CONFIG.token.length > 0;
+    
+    if (!tokenStatus) return;
+    
+    if (hasToken) {
+        showTokenStatus('✅ Token đã được cấu hình. Bạn có thể lưu dữ liệu lên GitHub.', 'success');
+    } else {
+        showTokenStatus('⚠️ Chưa có token. Bạn chỉ có thể xem dữ liệu.', 'info');
+    }
+}
+
+// ============================================
+// GITHUB API INTEGRATION
+// ============================================
+
+async function loadDataFromGitHub() {
+    const config = window.GITHUB_CONFIG;
+    if (!config || !config.token) {
+        console.log('No GitHub token, using default data');
+        return null;
+    }
+
+    try {
+        const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.filePath}?ref=${config.branch}`;
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `token ${config.token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+
+        if (!response.ok) {
+            if (response.status === 404) {
+                console.log('data.js not found in repository, using default data');
+                return null;
+            }
+            throw new Error(`GitHub API error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        gitHubFileSha = result.sha; // Store SHA for updates
+        
+        // Decode base64 content
+        const content = atob(result.content);
+        
+        // Extract defaultData from the file
+        const match = content.match(/const defaultData = ({[\s\S]*?});/);
+        if (match) {
+            const data = JSON.parse(match[1]);
+            console.log('Loaded data from GitHub');
+            return data;
+        }
+        
+        console.log('Could not parse data from GitHub file');
+        return null;
+    } catch (error) {
+        console.error('Error loading from GitHub:', error);
+        showSaveStatus(`❌ Lỗi tải dữ liệu: ${error.message}`, 'error');
+        return null;
+    }
+}
+
+async function saveDataToGitHub(data) {
+    const config = window.GITHUB_CONFIG;
+    if (!config || !config.token) {
+        showSaveStatus('⚠️ Không có token GitHub. Vui lòng cấu hình token trong Settings.', 'error');
+        return false;
+    }
+
+    try {
+        // Generate the new file content
+        const fileContent = `const defaultData = ${JSON.stringify(data, null, 2)};`;
+        const encodedContent = btoa(unescape(encodeURIComponent(fileContent)));
+
+        // If we don't have SHA, try to get it first
+        if (!gitHubFileSha) {
+            const getUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.filePath}?ref=${config.branch}`;
+            const getResponse = await fetch(getUrl, {
+                headers: {
+                    'Authorization': `token ${config.token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            if (getResponse.ok) {
+                const result = await getResponse.json();
+                gitHubFileSha = result.sha;
+            }
+        }
+
+        // Update or create the file
+        const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.filePath}`;
+        const payload = {
+            message: `Update itinerary data - ${new Date().toLocaleString('vi-VN')}`,
+            content: encodedContent,
+            branch: config.branch
+        };
+
+        if (gitHubFileSha) {
+            payload.sha = gitHubFileSha;
+        }
+
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${config.token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || `GitHub API error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        gitHubFileSha = result.content.sha; // Update SHA for next save
+        
+        console.log('Data saved to GitHub successfully');
+        showSaveStatus('✅ Đã lưu thành công lên GitHub!', 'success');
+        return true;
+    } catch (error) {
+        console.error('Error saving to GitHub:', error);
+        showSaveStatus(`❌ Lỗi lưu dữ liệu: ${error.message}`, 'error');
+        return false;
+    }
+}
+
+function showSaveStatus(message, type = 'info') {
+    // Remove existing status
+    const existing = document.querySelector('.save-status');
+    if (existing) {
+        existing.remove();
+    }
+
+    // Create status element
+    const status = document.createElement('div');
+    status.className = `save-status ${type}`;
+    status.textContent = message;
+    document.body.appendChild(status);
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        status.classList.add('fade-out');
+        setTimeout(() => status.remove(), 300);
+    }, 5000);
+}
+
+// ============================================
+// BACKUP FUNCTIONALITY
+// ============================================
+
+function downloadBackup() {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const filename = `hagiang-backup-${timestamp}.json`;
+    
+    const backupData = {
+        version: '1.0',
+        timestamp: new Date().toISOString(),
+        data: currentData
+    };
+    
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showSaveStatus(`📥 Đã tải backup: ${filename}`, 'success');
+}
+
+// Modified saveData to create backup before saving
+async function saveDataWithBackup(data) {
+    // Auto backup before save
+    const autoBackup = localStorage.getItem('autoBackup');
+    if (autoBackup !== 'false') {
+        downloadBackup();
+    }
+    
+    // Save to GitHub
+    await saveData(data);
+}
+
+// Save data function - calls GitHub API
+async function saveData(data) {
+    currentData = JSON.parse(JSON.stringify(data)); // Update current data
+    await saveDataToGitHub(data);
 }
 
 // Initialize app when DOM is ready

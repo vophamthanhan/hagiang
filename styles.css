@@ -40,6 +40,15 @@ body {
     margin-bottom: 20px;
 }
 
+.header-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-settings,
+.btn-backup,
 .btn-reset {
     background: #10b981;
     color: white;
@@ -52,6 +61,26 @@ body {
     align-items: center;
     gap: 8px;
     transition: all 0.3s ease;
+}
+
+.btn-settings {
+    background: #6366f1;
+}
+
+.btn-settings:hover {
+    background: #4f46e5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.btn-backup {
+    background: #f59e0b;
+}
+
+.btn-backup:hover {
+    background: #d97706;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
 }
 
 .btn-reset:hover {
@@ -659,6 +688,100 @@ body {
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
+.settings-modal {
+    max-width: 700px;
+}
+
+.settings-info {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.settings-info p {
+    margin-bottom: 12px;
+}
+
+.settings-info strong {
+    color: #0369a1;
+}
+
+.settings-info ol,
+.settings-info ul {
+    margin-left: 20px;
+    margin-top: 8px;
+}
+
+.settings-info li {
+    margin-bottom: 6px;
+}
+
+.settings-info code {
+    background: #e0f2fe;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+}
+
+.settings-info a {
+    color: #0284c7;
+    text-decoration: underline;
+}
+
+.form-group {
+    position: relative;
+}
+
+.btn-toggle-token {
+    position: absolute;
+    right: 10px;
+    top: 34px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #6b7280;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    transition: color 0.3s ease;
+}
+
+.btn-toggle-token:hover {
+    color: #3b82f6;
+}
+
+.token-status {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    display: none;
+}
+
+.token-status.success {
+    display: block;
+    background: #d1fae5;
+    border: 1px solid #6ee7b7;
+    color: #065f46;
+}
+
+.token-status.error {
+    display: block;
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+}
+
+.token-status.info {
+    display: block;
+    background: #dbeafe;
+    border: 1px solid #93c5fd;
+    color: #1e40af;
+}
+
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -781,3 +904,55 @@ body {
     animation: fadeIn 0.5s ease;
 }
 
+/* Save Status Notification */
+.save-status {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 16px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    animation: slideIn 0.3s ease;
+}
+
+.save-status.success {
+    background: #10b981;
+    color: white;
+}
+
+.save-status.error {
+    background: #ef4444;
+    color: white;
+}
+
+.save-status.info {
+    background: #3b82f6;
+    color: white;
+}
+
+.save-status.fade-out {
+    animation: fadeOut 0.3s ease;
+    opacity: 0;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
