@@ -951,6 +951,7 @@ function isGoogleMapsLink(str) {
 
 // Extract coordinates from Google Maps link
 async function extractCoordinatesFromLink(link) {
+    console.log('Processing Google Maps link:', link);
     showExtractStatus('🔄 Đang xử lý link Google Maps...', 'info');
     searchResults.style.display = 'none';
     
@@ -958,6 +959,7 @@ async function extractCoordinatesFromLink(link) {
         // Pattern 1: Direct coordinates in URL (@lat,lng)
         let match = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
         if (match) {
+            console.log('Found coordinates with @ pattern:', match[1], match[2]);
             const lat = parseFloat(match[1]);
             const lng = parseFloat(match[2]);
             await reverseGeocode(lat, lng);
@@ -967,31 +969,66 @@ async function extractCoordinatesFromLink(link) {
         // Pattern 2: Query string coordinates (!3d and !4d)
         match = link.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
         if (match) {
+            console.log('Found coordinates with !3d!4d pattern:', match[1], match[2]);
             const lat = parseFloat(match[1]);
             const lng = parseFloat(match[2]);
             await reverseGeocode(lat, lng);
             return;
         }
         
-        // Pattern 3: Short link - need to expand first
+        // Pattern 3: Coordinates with !2d (lng) and !3d (lat)
+        match = link.match(/!2d(-?\d+\.\d+)!3d(-?\d+\.\d+)/);
+        if (match) {
+            console.log('Found coordinates with !2d!3d pattern:', match[2], match[1]);
+            const lng = parseFloat(match[1]);
+            const lat = parseFloat(match[2]);
+            await reverseGeocode(lat, lng);
+            return;
+        }
+        
+        // Pattern 4: Short link - try to fetch and follow redirect
         if (link.includes('maps.app.goo.gl') || link.includes('goo.gl')) {
             showExtractStatus('🔄 Đang mở rộng link rút gọn...', 'info');
-            const expandedUrl = await expandShortUrl(link);
-            if (expandedUrl) {
-                await extractCoordinatesFromLink(expandedUrl);
-                return;
+            console.log('Attempting to expand short URL...');
+            
+            // Try different methods to get the full URL
+            try {
+                // Method 1: Use fetch with redirect follow
+                const response = await fetch(link, { 
+                    method: 'HEAD',
+                    redirect: 'follow'
+                });
+                const fullUrl = response.url;
+                console.log('Expanded URL:', fullUrl);
+                
+                if (fullUrl !== link && fullUrl.includes('google.com/maps')) {
+                    // Recursively process the expanded URL
+                    await extractCoordinatesFromLink(fullUrl);
+                    return;
+                }
+            } catch (fetchError) {
+                console.log('Direct fetch failed, trying proxy method...');
+                // Method 2: Try proxy
+                const expandedUrl = await expandShortUrl(link);
+                if (expandedUrl) {
+                    await extractCoordinatesFromLink(expandedUrl);
+                    return;
+                }
             }
         }
         
-        // Pattern 4: Place ID or query
-        match = link.match(/place\/([^\/]+)/);
+        // Pattern 5: Place ID or query
+        match = link.match(/place\/([^\/\?&]+)/);
         if (match) {
             const placeName = decodeURIComponent(match[1].replace(/\+/g, ' '));
+            console.log('Found place name:', placeName);
             showExtractStatus('🔄 Đang tìm kiếm: ' + placeName, 'info');
+            searchResults.style.display = 'block';
             searchPlaces(placeName);
             return;
         }
         
+        console.log('No pattern matched for link');
         showExtractStatus('❌ Không thể trích xuất tọa độ từ link này. Thử paste link khác hoặc nhập tên địa điểm.', 'error');
         
     } catch (error) {
@@ -1003,17 +1040,30 @@ async function extractCoordinatesFromLink(link) {
 // Expand shortened URL
 async function expandShortUrl(shortUrl) {
     try {
+        console.log('Trying to expand short URL with proxy...');
         // Use a CORS proxy to follow redirects
         const proxyUrl = 'https://api.allorigins.win/raw?url=';
-        const response = await fetch(proxyUrl + encodeURIComponent(shortUrl));
+        const response = await fetch(proxyUrl + encodeURIComponent(shortUrl), {
+            method: 'GET'
+        });
         const text = await response.text();
+        console.log('Proxy response received, length:', text.length);
         
         // Try to extract coordinates from the response
-        const match = text.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+        let match = text.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
         if (match) {
+            console.log('Found coordinates in proxy response:', match[1], match[2]);
             return `https://www.google.com/maps/@${match[1]},${match[2]}`;
         }
         
+        // Try other patterns
+        match = text.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+        if (match) {
+            console.log('Found !3d!4d coordinates:', match[1], match[2]);
+            return `https://www.google.com/maps/@${match[1]},${match[2]}`;
+        }
+        
+        console.log('No coordinates found in proxy response');
         return null;
     } catch (error) {
         console.error('Error expanding short URL:', error);
@@ -1072,6 +1122,8 @@ async function reverseGeocode(lat, lng) {
 
 // Search places using Nominatim (OpenStreetMap)
 async function searchPlaces(query) {
+    console.log('Searching for:', query);
+    
     try {
         const response = await fetch(
             `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`,
@@ -1087,16 +1139,23 @@ async function searchPlaces(query) {
         }
         
         const results = await response.json();
+        console.log('Search results:', results);
         displaySearchResults(results);
         
     } catch (error) {
         console.error('Search error:', error);
+        searchResults.style.display = 'block';
         searchResults.innerHTML = '<div class="search-no-results">❌ Lỗi khi tìm kiếm. Vui lòng thử lại.</div>';
     }
 }
 
 // Display search results
 function displaySearchResults(results) {
+    console.log('Displaying', results.length, 'results');
+    
+    // Make sure search results container is visible
+    searchResults.style.display = 'block';
+    
     if (results.length === 0) {
         searchResults.innerHTML = '<div class="search-no-results">Không tìm thấy kết quả. Thử tìm kiếm khác.</div>';
         return;
@@ -1123,6 +1182,8 @@ function displaySearchResults(results) {
         
         searchResults.appendChild(item);
     });
+    
+    console.log('Search results displayed successfully');
 }
 
 // Select a search result
