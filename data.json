@@ -179,20 +179,6 @@
         },
         {
           "id": 3,
-          "name": "Coffee Thẩm Mã",
-          "time": "09:30",
-          "activities": "",
-          "meals": "",
-          "accommodation": "",
-          "clothing": null,
-          "note": "",
-          "lat": 23.2772003,
-          "lng": 105.2882046,
-          "distance": 0,
-          "duration": 0
-        },
-        {
-          "id": 4,
           "name": "Dinh Vua Mèo",
           "time": "10:00",
           "activities": "Tham quan Dinh Vua Mèo",
@@ -206,7 +192,7 @@
           "duration": null
         },
         {
-          "id": 5,
+          "id": 4,
           "name": "Phim trường \"Chuyện của Pao\"",
           "time": "10:20",
           "activities": "",
@@ -220,7 +206,7 @@
           "duration": null
         },
         {
-          "id": 6,
+          "id": 5,
           "name": "Mã Pí Lèng",
           "time": "12:00",
           "activities": "Ngắm cảnh hẻm Tu Sản, sông Nho Quế",
@@ -234,7 +220,7 @@
           "duration": null
         },
         {
-          "id": 7,
+          "id": 6,
           "name": "Homestay Đồng Văn",
           "time": "16:00",
           "activities": "Nhận phòng, ăn tối",
@@ -248,7 +234,7 @@
           "duration": null
         },
         {
-          "id": 8,
+          "id": 7,
           "name": "Lang thang Phố cổ",
           "time": "19:00",
           "activities": "",
@@ -262,7 +248,7 @@
           "duration": 0
         },
         {
-          "id": 9,
+          "id": 8,
           "name": "Địa điểm mới",
           "time": "",
           "activities": "",
