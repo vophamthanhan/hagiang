@@ -151,6 +151,20 @@
         },
         {
           "id": 4,
+          "name": "Phim trường \"Chuyện của Pao\"",
+          "time": "10:20",
+          "activities": "",
+          "meals": "",
+          "accommodation": "",
+          "lat": 23.225789,
+          "lng": 105.2011853,
+          "note": "",
+          "clothing": null,
+          "distance": null,
+          "duration": null
+        },
+        {
+          "id": 5,
           "name": "Đồng Văn",
           "time": "10:30",
           "activities": "Ăn trưa tại Đồng Văn",
@@ -159,20 +173,6 @@
           "lat": null,
           "lng": null,
           "note": "Thưởng thức ẩm thực địa phương.",
-          "clothing": null,
-          "distance": null,
-          "duration": null
-        },
-        {
-          "id": 5,
-          "name": "Phim trường \"Chuyện của Pao\"",
-          "time": "12:00",
-          "activities": "",
-          "meals": "",
-          "accommodation": "",
-          "lat": 23.225789,
-          "lng": 105.2037602,
-          "note": "",
           "clothing": null,
           "distance": null,
           "duration": null
