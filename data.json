@@ -93,10 +93,10 @@
           "activities": "Nhận phòng, ăn tối",
           "meals": "Tối",
           "accommodation": "Homestay Lô Lô Time",
-          "lat": 23.333333,
-          "lng": 105.333333,
+          "lat": 23.3622129,
+          "lng": 105.3101329,
           "note": "Nghỉ ngơi tại homestay Lô Lô Chải.",
-          "clothing": [],
+          "clothing": null,
           "distance": null,
           "duration": null
         }
