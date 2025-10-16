@@ -951,12 +951,14 @@ function updateCoordinatesAndMap(lat, lng) {
     document.getElementById('editLng').value = lng;
     
     // Auto update location object and refresh map
-    if (editingLocation !== null) {
+    if (editingLocation !== null && typeof editingLocation === 'object' && editingLocation.index !== undefined) {
         const dayData = currentData.days[currentDay - 1];
-        const location = dayData.locations[editingLocation];
-        location.lat = lat;
-        location.lng = lng;
-        updateMap(); // Refresh map with new coordinates
+        if (dayData && dayData.locations[editingLocation.index]) {
+            const location = dayData.locations[editingLocation.index];
+            location.lat = lat;
+            location.lng = lng;
+            updateMap(); // Refresh map with new coordinates
+        }
     }
     
     showExtractStatus(`✅ Đã lấy tọa độ: ${lat.toFixed(6)}, ${lng.toFixed(6)}`, 'success');
