@@ -88,11 +88,11 @@
         },
         {
           "id": 6,
-          "name": "Homestay Lô Lô Time",
+          "name": "Homestay ở Lô Lô Chải",
           "time": "18:00",
           "activities": "Nhận phòng, ăn tối",
           "meals": "Tối",
-          "accommodation": "Homestay Lô Lô Time",
+          "accommodation": "",
           "lat": 23.3622129,
           "lng": 105.3101329,
           "note": "",
