@@ -179,20 +179,6 @@
         },
         {
           "id": 5,
-          "name": "Dốc Chín Khoanh",
-          "time": "13:00",
-          "activities": "Chụp ảnh, ngắm cảnh",
-          "meals": "",
-          "accommodation": "",
-          "lat": 23.20984,
-          "lng": 105.1924693,
-          "note": "Cung đường đèo ấn tượng.",
-          "clothing": null,
-          "distance": null,
-          "duration": null
-        },
-        {
-          "id": 6,
           "name": "Mã Pí Lèng",
           "time": "15:00",
           "activities": "Ngắm cảnh hẻm Tu Sản, sông Nho Quế",
@@ -206,7 +192,7 @@
           "duration": null
         },
         {
-          "id": 7,
+          "id": 6,
           "name": "Homestay Đồng Văn",
           "time": "16:00",
           "activities": "Nhận phòng, ăn tối",
