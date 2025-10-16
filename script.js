@@ -921,6 +921,14 @@ function handleSearchInput(e) {
     if (query.length < 3) {
         searchResults.style.display = 'none';
         searchResults.innerHTML = '';
+        extractStatus.textContent = '';
+        extractStatus.className = 'extract-status';
+        return;
+    }
+    
+    // Check if input is a Google Maps link
+    if (isGoogleMapsLink(query)) {
+        extractCoordinatesFromLink(query);
         return;
     }
     
@@ -932,6 +940,134 @@ function handleSearchInput(e) {
     searchTimeout = setTimeout(() => {
         searchPlaces(query);
     }, 500);
+}
+
+// Check if string is a Google Maps link
+function isGoogleMapsLink(str) {
+    return str.includes('google.com/maps') || 
+           str.includes('maps.app.goo.gl') || 
+           str.includes('goo.gl/maps');
+}
+
+// Extract coordinates from Google Maps link
+async function extractCoordinatesFromLink(link) {
+    showExtractStatus('🔄 Đang xử lý link Google Maps...', 'info');
+    searchResults.style.display = 'none';
+    
+    try {
+        // Pattern 1: Direct coordinates in URL (@lat,lng)
+        let match = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+        if (match) {
+            const lat = parseFloat(match[1]);
+            const lng = parseFloat(match[2]);
+            await reverseGeocode(lat, lng);
+            return;
+        }
+        
+        // Pattern 2: Query string coordinates (!3d and !4d)
+        match = link.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+        if (match) {
+            const lat = parseFloat(match[1]);
+            const lng = parseFloat(match[2]);
+            await reverseGeocode(lat, lng);
+            return;
+        }
+        
+        // Pattern 3: Short link - need to expand first
+        if (link.includes('maps.app.goo.gl') || link.includes('goo.gl')) {
+            showExtractStatus('🔄 Đang mở rộng link rút gọn...', 'info');
+            const expandedUrl = await expandShortUrl(link);
+            if (expandedUrl) {
+                await extractCoordinatesFromLink(expandedUrl);
+                return;
+            }
+        }
+        
+        // Pattern 4: Place ID or query
+        match = link.match(/place\/([^\/]+)/);
+        if (match) {
+            const placeName = decodeURIComponent(match[1].replace(/\+/g, ' '));
+            showExtractStatus('🔄 Đang tìm kiếm: ' + placeName, 'info');
+            searchPlaces(placeName);
+            return;
+        }
+        
+        showExtractStatus('❌ Không thể trích xuất tọa độ từ link này. Thử paste link khác hoặc nhập tên địa điểm.', 'error');
+        
+    } catch (error) {
+        console.error('Error extracting from link:', error);
+        showExtractStatus('❌ Lỗi khi xử lý link: ' + error.message, 'error');
+    }
+}
+
+// Expand shortened URL
+async function expandShortUrl(shortUrl) {
+    try {
+        // Use a CORS proxy to follow redirects
+        const proxyUrl = 'https://api.allorigins.win/raw?url=';
+        const response = await fetch(proxyUrl + encodeURIComponent(shortUrl));
+        const text = await response.text();
+        
+        // Try to extract coordinates from the response
+        const match = text.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+        if (match) {
+            return `https://www.google.com/maps/@${match[1]},${match[2]}`;
+        }
+        
+        return null;
+    } catch (error) {
+        console.error('Error expanding short URL:', error);
+        return null;
+    }
+}
+
+// Reverse geocode to get place name from coordinates
+async function reverseGeocode(lat, lng) {
+    try {
+        showExtractStatus('🔄 Đang lấy thông tin địa điểm...', 'info');
+        
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+            {
+                headers: {
+                    'User-Agent': 'HaGiangTravelPlanner/1.0'
+                }
+            }
+        );
+        
+        if (!response.ok) {
+            throw new Error('Không thể lấy thông tin địa điểm');
+        }
+        
+        const data = await response.json();
+        
+        if (data && data.display_name) {
+            // Update coordinates
+            updateCoordinatesAndMap(lat, lng);
+            
+            // Update location name if empty
+            const nameInput = document.getElementById('editName');
+            if (!nameInput.value || nameInput.value === 'Địa điểm mới') {
+                const placeName = data.name || data.display_name.split(',')[0];
+                nameInput.value = placeName;
+            }
+            
+            showExtractStatus(`✅ Đã lấy tọa độ: ${data.display_name}`, 'success');
+            
+            // Show the location info
+            mapSearchInput.value = data.display_name;
+        } else {
+            // Even if we can't get the name, we still have coordinates
+            updateCoordinatesAndMap(lat, lng);
+            showExtractStatus(`✅ Đã lấy tọa độ: ${lat.toFixed(6)}, ${lng.toFixed(6)}`, 'success');
+        }
+        
+    } catch (error) {
+        console.error('Reverse geocode error:', error);
+        // Still update coordinates even if reverse geocode fails
+        updateCoordinatesAndMap(lat, lng);
+        showExtractStatus(`✅ Đã lấy tọa độ: ${lat.toFixed(6)}, ${lng.toFixed(6)}`, 'success');
+    }
 }
 
 // Search places using Nominatim (OpenStreetMap)
