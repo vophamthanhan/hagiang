@@ -26,8 +26,8 @@
       {
         "id": 4,
         "icon": "🏠",
-        "title": "Kết thúc: Trở về từ Đà Nẵng",
-        "description": "Từ sân bay Đà Nẵng → Bay về Hà Nội",
+        "title": "Kết thúc: Trở về Đà Nẵng",
+        "description": "Từ sân bay Hà Nội → Bay về Đà Nẵng",
         "type": "end"
       }
     ]
