@@ -365,39 +365,18 @@
             </div>
             <div class="modal-body">
                 <div class="overview-info">
-                    <h4>📍 Hành trình 4 ngày 3 đêm</h4>
-                    <div class="trip-timeline">
-                        <div class="timeline-item">
-                            <div class="timeline-icon start">🛫</div>
-                            <div class="timeline-content">
-                                <h5>Ngày 1: Xuất phát từ Hà Nội</h5>
-                                <p>Khởi hành từ sân bay Nội Bài → Di chuyển đến Hà Giang</p>
-                            </div>
-                        </div>
-                        <div class="timeline-connector"></div>
-                        <div class="timeline-item">
-                            <div class="timeline-icon main">⛰️</div>
-                            <div class="timeline-content">
-                                <h5>Ngày 2-3: Khám phá Hà Giang</h5>
-                                <p>Cột cờ Lũng Cú, Cao nguyên đá Đồng Văn, Đèo Mã Pí Lèng, Sông Nho Quế</p>
-                            </div>
-                        </div>
-                        <div class="timeline-connector"></div>
-                        <div class="timeline-item">
-                            <div class="timeline-icon secondary">🏖️</div>
-                            <div class="timeline-content">
-                                <h5>Ngày 4: Bay đến Đà Nẵng</h5>
-                                <p>Từ Hà Giang về Hà Nội → Bay đến Đà Nẵng nghỉ dưỡng</p>
-                            </div>
-                        </div>
-                        <div class="timeline-connector"></div>
-                        <div class="timeline-item">
-                            <div class="timeline-icon end">🏠</div>
-                            <div class="timeline-content">
-                                <h5>Kết thúc: Trở về từ Đà Nẵng</h5>
-                                <p>Từ sân bay Đà Nẵng → Bay về Hà Nội</p>
-                            </div>
-                        </div>
+                    <div class="overview-header-actions">
+                        <h4>📍 <span id="overviewTitle">Hành trình 4 ngày 3 đêm</span></h4>
+                        <button class="btn-edit-overview" id="editOverviewBtn" title="Chỉnh sửa tổng quan">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 20h9"/>
+                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                            </svg>
+                            Chỉnh sửa
+                        </button>
+                    </div>
+                    <div class="trip-timeline" id="tripTimeline">
+                        <!-- Timeline will be dynamically rendered -->
                     </div>
                 </div>
                 <div class="overview-map-container">
@@ -414,6 +393,38 @@
                         </iframe>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Overview Modal -->
+    <div class="modal" id="editOverviewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✏️ Chỉnh sửa tổng quan chuyến đi</h3>
+                <button class="modal-close" id="closeEditOverviewModal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editOverviewForm">
+                    <div class="form-group">
+                        <label>Tiêu đề tổng quan</label>
+                        <input type="text" id="editOverviewTitleInput" placeholder="VD: Hành trình 4 ngày 3 đêm">
+                    </div>
+                    
+                    <div class="timeline-editor" id="timelineEditor">
+                        <!-- Timeline items will be dynamically rendered -->
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" id="cancelOverviewBtn">Hủy</button>
+                        <button type="submit" class="btn-save">Lưu thay đổi</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

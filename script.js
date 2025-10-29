@@ -39,6 +39,12 @@ const overviewBtn = document.getElementById('overviewBtn');
 const overviewModal = document.getElementById('overviewModal');
 const closeOverviewModal = document.getElementById('closeOverviewModal');
 const overviewMapIframe = document.getElementById('overviewMapIframe');
+const editOverviewBtn = document.getElementById('editOverviewBtn');
+const editOverviewModal = document.getElementById('editOverviewModal');
+const closeEditOverviewModal = document.getElementById('closeEditOverviewModal');
+const cancelOverviewBtn = document.getElementById('cancelOverviewBtn');
+const editOverviewForm = document.getElementById('editOverviewForm');
+const tripTimeline = document.getElementById('tripTimeline');
 
 // Google Maps search state
 let selectedPlace = null;
@@ -135,6 +141,15 @@ function attachEventListeners() {
     overviewBtn.addEventListener('click', openOverviewModal);
     closeOverviewModal.addEventListener('click', closeOverview);
     
+    // Edit overview
+    editOverviewBtn.addEventListener('click', openEditOverviewModal);
+    closeEditOverviewModal.addEventListener('click', closeEditOverview);
+    cancelOverviewBtn.addEventListener('click', closeEditOverview);
+    editOverviewForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        saveOverviewEdit();
+    });
+    
     // Settings form
     settingsForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -163,6 +178,12 @@ function attachEventListeners() {
     overviewModal.addEventListener('click', (e) => {
         if (e.target === overviewModal) {
             closeOverview();
+        }
+    });
+    
+    editOverviewModal.addEventListener('click', (e) => {
+        if (e.target === editOverviewModal) {
+            closeEditOverview();
         }
     });
 }
@@ -1552,6 +1573,9 @@ function updateTokenStatus() {
 function openOverviewModal() {
     overviewModal.classList.add('active');
     
+    // Render timeline from data
+    renderOverviewTimeline();
+    
     // Define 4 key locations with coordinates
     const locations = [
         { name: 'Hà Nội (Sân bay Nội Bài)', lat: 21.0285, lng: 105.8542 },
@@ -1561,17 +1585,148 @@ function openOverviewModal() {
     ];
     
     // Build Google Maps URL with route
-    // Route: Hanoi → Ha Giang → Hanoi → Da Nang → Hanoi
     const origin = `${locations[0].lat},${locations[0].lng}`;
     const destination = `${locations[3].lat},${locations[3].lng}`;
-    
-    // Waypoints: Ha Giang, Da Nang
     const waypoints = `${locations[1].lat},${locations[1].lng}|${locations[2].lat},${locations[2].lng}`;
     
-    // Use Google Maps Directions Embed API
     const directionsUrl = `https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=${origin}&destination=${destination}&waypoints=${waypoints}&mode=driving&language=vi`;
     
     overviewMapIframe.src = directionsUrl;
+}
+
+function renderOverviewTimeline() {
+    if (!currentData || !currentData.overview) {
+        // Default overview if not in data
+        currentData.overview = {
+            title: "Hành trình 4 ngày 3 đêm",
+            timeline: [
+                {
+                    id: 1,
+                    icon: "🛫",
+                    title: "Ngày 1: Xuất phát từ Hà Nội",
+                    description: "Khởi hành từ sân bay Nội Bài → Di chuyển đến Hà Giang",
+                    type: "start"
+                },
+                {
+                    id: 2,
+                    icon: "⛰️",
+                    title: "Ngày 2-3: Khám phá Hà Giang",
+                    description: "Cột cờ Lũng Cú, Cao nguyên đá Đồng Văn, Đèo Mã Pí Lèng, Sông Nho Quế",
+                    type: "main"
+                },
+                {
+                    id: 3,
+                    icon: "🏖️",
+                    title: "Ngày 4: Bay đến Đà Nẵng",
+                    description: "Từ Hà Giang về Hà Nội → Bay đến Đà Nẵng nghỉ dưỡng",
+                    type: "secondary"
+                },
+                {
+                    id: 4,
+                    icon: "🏠",
+                    title: "Kết thúc: Trở về từ Đà Nẵng",
+                    description: "Từ sân bay Đà Nẵng → Bay về Hà Nội",
+                    type: "end"
+                }
+            ]
+        };
+    }
+    
+    // Update title
+    document.getElementById('overviewTitle').textContent = currentData.overview.title;
+    
+    // Render timeline items
+    tripTimeline.innerHTML = '';
+    currentData.overview.timeline.forEach((item, index) => {
+        const timelineItem = document.createElement('div');
+        timelineItem.className = 'timeline-item';
+        timelineItem.innerHTML = `
+            <div class="timeline-icon ${item.type}">${item.icon}</div>
+            <div class="timeline-content">
+                <h5>${item.title}</h5>
+                <p>${item.description}</p>
+            </div>
+        `;
+        tripTimeline.appendChild(timelineItem);
+        
+        // Add connector except for last item
+        if (index < currentData.overview.timeline.length - 1) {
+            const connector = document.createElement('div');
+            connector.className = 'timeline-connector';
+            tripTimeline.appendChild(connector);
+        }
+    });
+}
+
+function openEditOverviewModal() {
+    if (!currentData.overview) {
+        renderOverviewTimeline(); // Initialize default data
+    }
+    
+    // Fill form
+    document.getElementById('editOverviewTitleInput').value = currentData.overview.title;
+    
+    // Render timeline editor
+    renderTimelineEditor();
+    
+    editOverviewModal.classList.add('active');
+}
+
+function renderTimelineEditor() {
+    const timelineEditor = document.getElementById('timelineEditor');
+    timelineEditor.innerHTML = '<h4 style="margin-bottom: 16px;">📋 Chi tiết các mốc thời gian</h4>';
+    
+    currentData.overview.timeline.forEach((item, index) => {
+        const editorItem = document.createElement('div');
+        editorItem.className = 'timeline-editor-item';
+        editorItem.innerHTML = `
+            <div class="editor-item-header">
+                <span class="editor-item-number">${index + 1}</span>
+                <input type="text" class="timeline-icon-input" data-index="${index}" value="${item.icon}" placeholder="Icon (emoji)">
+                <select class="timeline-type-select" data-index="${index}">
+                    <option value="start" ${item.type === 'start' ? 'selected' : ''}>Bắt đầu</option>
+                    <option value="main" ${item.type === 'main' ? 'selected' : ''}>Chính</option>
+                    <option value="secondary" ${item.type === 'secondary' ? 'selected' : ''}>Phụ</option>
+                    <option value="end" ${item.type === 'end' ? 'selected' : ''}>Kết thúc</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Tiêu đề</label>
+                <input type="text" class="timeline-title-input" data-index="${index}" value="${item.title}" placeholder="VD: Ngày 1: Xuất phát từ Hà Nội">
+            </div>
+            <div class="form-group">
+                <label>Mô tả</label>
+                <textarea class="timeline-desc-input" data-index="${index}" rows="2" placeholder="VD: Khởi hành từ sân bay...">${item.description}</textarea>
+            </div>
+        `;
+        timelineEditor.appendChild(editorItem);
+    });
+}
+
+function saveOverviewEdit() {
+    // Update title
+    currentData.overview.title = document.getElementById('editOverviewTitleInput').value;
+    
+    // Update timeline items
+    currentData.overview.timeline.forEach((item, index) => {
+        item.icon = document.querySelector(`.timeline-icon-input[data-index="${index}"]`).value;
+        item.type = document.querySelector(`.timeline-type-select[data-index="${index}"]`).value;
+        item.title = document.querySelector(`.timeline-title-input[data-index="${index}"]`).value;
+        item.description = document.querySelector(`.timeline-desc-input[data-index="${index}"]`).value;
+    });
+    
+    // Save to GitHub
+    saveData(currentData);
+    
+    // Re-render overview
+    renderOverviewTimeline();
+    
+    // Close edit modal
+    closeEditOverview();
+}
+
+function closeEditOverview() {
+    editOverviewModal.classList.remove('active');
 }
 
 function closeOverview() {
