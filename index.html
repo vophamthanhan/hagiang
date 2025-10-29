@@ -31,6 +31,14 @@
                     </svg>
                     Khôi phục
                 </button>
+                <button class="btn-overview" id="overviewBtn" title="Xem tổng quát chuyến đi">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                        <path d="M12 2v3"/>
+                    </svg>
+                    Xem tổng quát
+                </button>
             </div>
         </header>
 
@@ -339,6 +347,73 @@
                         <button type="submit" class="btn-save">Lưu Token</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overview Modal -->
+    <div class="modal" id="overviewModal">
+        <div class="modal-content overview-modal">
+            <div class="modal-header">
+                <h3>🗺️ Tổng quan chuyến đi Hà Giang 2025</h3>
+                <button class="modal-close" id="closeOverviewModal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="overview-info">
+                    <h4>📍 Hành trình 4 ngày 3 đêm</h4>
+                    <div class="trip-timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-icon start">🛫</div>
+                            <div class="timeline-content">
+                                <h5>Ngày 1: Xuất phát từ Hà Nội</h5>
+                                <p>Khởi hành từ sân bay Nội Bài → Di chuyển đến Hà Giang</p>
+                            </div>
+                        </div>
+                        <div class="timeline-connector"></div>
+                        <div class="timeline-item">
+                            <div class="timeline-icon main">⛰️</div>
+                            <div class="timeline-content">
+                                <h5>Ngày 2-3: Khám phá Hà Giang</h5>
+                                <p>Cột cờ Lũng Cú, Cao nguyên đá Đồng Văn, Đèo Mã Pí Lèng, Sông Nho Quế</p>
+                            </div>
+                        </div>
+                        <div class="timeline-connector"></div>
+                        <div class="timeline-item">
+                            <div class="timeline-icon secondary">🏖️</div>
+                            <div class="timeline-content">
+                                <h5>Ngày 4: Bay đến Đà Nẵng</h5>
+                                <p>Từ Hà Giang về Hà Nội → Bay đến Đà Nẵng nghỉ dưỡng</p>
+                            </div>
+                        </div>
+                        <div class="timeline-connector"></div>
+                        <div class="timeline-item">
+                            <div class="timeline-icon end">🏠</div>
+                            <div class="timeline-content">
+                                <h5>Kết thúc: Trở về từ Đà Nẵng</h5>
+                                <p>Từ sân bay Đà Nẵng → Bay về Hà Nội</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="overview-map-container">
+                    <h4>🗺️ Bản đồ hành trình tổng quát</h4>
+                    <div class="overview-map">
+                        <iframe 
+                            id="overviewMapIframe" 
+                            width="100%" 
+                            height="100%" 
+                            style="border:0; border-radius: 12px;" 
+                            loading="lazy" 
+                            allowfullscreen
+                            referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

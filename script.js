@@ -35,6 +35,10 @@ const gridViewBtn = document.getElementById('gridViewBtn');
 const viewAllBtn = document.getElementById('viewAllBtn');
 const tableViewContainer = document.getElementById('tableViewContainer');
 const itineraryTable = document.getElementById('itineraryTable');
+const overviewBtn = document.getElementById('overviewBtn');
+const overviewModal = document.getElementById('overviewModal');
+const closeOverviewModal = document.getElementById('closeOverviewModal');
+const overviewMapIframe = document.getElementById('overviewMapIframe');
 
 // Google Maps search state
 let selectedPlace = null;
@@ -127,6 +131,10 @@ function attachEventListeners() {
     settingsBtn.addEventListener('click', openSettingsModal);
     closeSettingsModal.addEventListener('click', closeSettings);
     
+    // Overview button
+    overviewBtn.addEventListener('click', openOverviewModal);
+    closeOverviewModal.addEventListener('click', closeOverview);
+    
     // Settings form
     settingsForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -149,6 +157,12 @@ function attachEventListeners() {
     settingsModal.addEventListener('click', (e) => {
         if (e.target === settingsModal) {
             closeSettings();
+        }
+    });
+    
+    overviewModal.addEventListener('click', (e) => {
+        if (e.target === overviewModal) {
+            closeOverview();
         }
     });
 }
@@ -1529,6 +1543,40 @@ function updateTokenStatus() {
     } else {
         showTokenStatus('⚠️ Chưa có token. Bạn chỉ có thể xem dữ liệu.', 'info');
     }
+}
+
+// ============================================
+// OVERVIEW MODAL
+// ============================================
+
+function openOverviewModal() {
+    overviewModal.classList.add('active');
+    
+    // Define 4 key locations with coordinates
+    const locations = [
+        { name: 'Hà Nội (Sân bay Nội Bài)', lat: 21.0285, lng: 105.8542 },
+        { name: 'Hà Giang', lat: 22.8230, lng: 104.9784 },
+        { name: 'Đà Nẵng', lat: 16.0544, lng: 108.2022 },
+        { name: 'Sân bay Hà Nội', lat: 21.0285, lng: 105.8542 }
+    ];
+    
+    // Build Google Maps URL with route
+    // Route: Hanoi → Ha Giang → Hanoi → Da Nang → Hanoi
+    const origin = `${locations[0].lat},${locations[0].lng}`;
+    const destination = `${locations[3].lat},${locations[3].lng}`;
+    
+    // Waypoints: Ha Giang, Da Nang
+    const waypoints = `${locations[1].lat},${locations[1].lng}|${locations[2].lat},${locations[2].lng}`;
+    
+    // Use Google Maps Directions Embed API
+    const directionsUrl = `https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=${origin}&destination=${destination}&waypoints=${waypoints}&mode=driving&language=vi`;
+    
+    overviewMapIframe.src = directionsUrl;
+}
+
+function closeOverview() {
+    overviewModal.classList.remove('active');
+    overviewMapIframe.src = '';
 }
 
 // ============================================
