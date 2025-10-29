@@ -12,15 +12,15 @@
       {
         "id": 2,
         "icon": "⛰️",
-        "title": "Ngày 2-3: Khám phá Hà Giang",
+        "title": "Ngày 2: Khám phá Hà Giang",
         "description": "Cột cờ Lũng Cú, Cao nguyên đá Đồng Văn, Đèo Mã Pí Lèng, Sông Nho Quế",
         "type": "main"
       },
       {
         "id": 3,
         "icon": "🏖️",
-        "title": "Ngày 4: Bay đến Đà Nẵng",
-        "description": "Từ Hà Giang về Hà Nội → Bay đến Đà Nẵng nghỉ dưỡng",
+        "title": "Ngày 3: Khám phá Hà Giang và quay về Thủ đô Hà Nội",
+        "description": "Từ Hà Giang về Hà Nội",
         "type": "secondary"
       },
       {
